@@ -95,23 +95,18 @@ jobs:
             echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
 
             echo "📦 Instalando dependencias y reiniciando microservicios..."
-
-            # --- Backend principal ---
-            cd /var/www/joan_site/backend
-            npm install --omit=dev
-            pm2 delete backend || true
-            pm2 start dist/src/main.js --name backend --time
-
-            # --- Servicio de rutas ---
-            cd /var/www/joan_site/backend/rutas-service
-            npm install --omit=dev
-            pm2 delete rutas-service || true
-            pm2 start dist/src/main.js --name rutas-service --time
+            for SERVICE in backend rutas-service; do
+              cd /var/www/joan_site/backend/$SERVICE
+              npm install --omit=dev
+              pm2 delete $SERVICE || true
+              pm2 start dist/src/main.js --name $SERVICE --time
+            done
 
             pm2 save
             pm2 status
             echo "✅ Todos los microservicios desplegados correctamente."
           '
+
 
 
 
