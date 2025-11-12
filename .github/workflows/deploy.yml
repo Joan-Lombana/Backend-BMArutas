@@ -1,4 +1,4 @@
-name: 🚀 Backend Deploy
+name: 🚀 Backend Deploy - NestJS
 
 on:
   push:
@@ -6,59 +6,112 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASS: ${{ secrets.DB_PASS }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_UR }}
+      ROUTES_SERVICE_URL: ${{ secrets.ROUTES_SERVICE_URL }}
 
     steps:
       # 1️⃣ Clonar repositorio
-      - uses: actions/checkout@v4
+      - name: 🧩 Checkout del código
+        uses: actions/checkout@v4
 
       # 2️⃣ Configurar Node.js
-      - uses: actions/setup-node@v4
+      - name: ⚙️ Configurar Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '20'
 
-      # 3️⃣ Build microservicios
-      - name: 🏗️ Build backend y rutas-service
+      # 3️⃣ Construir microservicios
+      - name: 🏗️ Construir microservicios
         run: |
           cd backend
+          echo "📂 Construyendo backend principal..."
           npm ci
           npm run build
+          echo "📂 Construyendo rutas-service..."
           cd rutas-service
           npm ci
           npm run build
           cd ..
 
-      # 4️⃣ Empaquetar builds
-      - name: 📦 Crear archivo deploy
-        run: |
-          tar -czf deploy.tar.gz -C backend backend rutas-service
+      # 4️⃣ Configurar SSH
+      - name: 🔑 Configurar SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      # 5️⃣ Subir y desplegar al servidor
-      - name: ⚡ Deploy en servidor remoto
-        env:
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      # 5️⃣ Empaquetar backend localmente
+      - name: 📦 Empaquetar backend
         run: |
-          scp deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/
-          ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-            rm -rf /var/www/joan_site/backend/backend
-            rm -rf /var/www/joan_site/backend/rutas-service
+          tar -czf deploy.tar.gz \
+            --exclude='**/Dockerfile' \
+            --exclude='**/docker-compose.yml' \
+            -C backend dist package.json package-lock.json tsconfig.json rutas-service
+
+
+      - name: 🛠️ Preparar directorio remoto para backend
+        run: |
+          ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
+            mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
+          '
+      - name: 🚚 Subir paquete al servidor
+        run: scp -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
+
+      - name: ⚡ Desplegar backend en servidor
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+            echo "🧹 Limpiando /var/www/joan_site/backend..."
             mkdir -p /var/www/joan_site/backend
-            tar -xzf /tmp/deploy.tar.gz -C /var/www/joan_site/backend/
-            cd /var/www/joan_site/backend/backend
+            rm -rf /var/www/joan_site/backend/*
+
+            echo "📦 Desempaquetando backend..."
+            tar -xzf /tmp/eco_backend/deploy.tar.gz -C /var/www/joan_site/backend/
+
+            echo "📝 Generando archivo .env..."
+            ENV_FILE=/var/www/joan_site/backend/.env
+            > $ENV_FILE
+            echo "DB_HOST=$DB_HOST" >> $ENV_FILE
+            echo "DB_PORT=$DB_PORT" >> $ENV_FILE
+            echo "DB_NAME=$DB_NAME" >> $ENV_FILE
+            echo "DB_USER=$DB_USER" >> $ENV_FILE
+            echo "DB_PASS=$DB_PASS" >> $ENV_FILE
+            echo "JWT_SECRET=$JWT_SECRET" >> $ENV_FILE
+            echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> $ENV_FILE
+            echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> $ENV_FILE
+            echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
+            echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
+
+            echo "📦 Instalando dependencias y reiniciando microservicios..."
+
+            # --- Backend principal ---
+            cd /var/www/joan_site/backend
             npm install --omit=dev
             pm2 delete backend || true
             pm2 start dist/main.js --name backend --time
-            cd ../rutas-service
+
+            # --- Servicio de rutas ---
+            cd /var/www/joan_site/backend/rutas-service
             npm install --omit=dev
             pm2 delete rutas-service || true
             pm2 start dist/main.js --name rutas-service --time
-            
+
+            pm2 save
+            pm2 status
             echo "✅ Todos los microservicios desplegados correctamente."
-          EOF
-         
+          '
 
 
 
