@@ -59,7 +59,8 @@ jobs:
             --exclude='**/Dockerfile' \
             --exclude='**/docker-compose.yml' \
             -C backend dist package.json package-lock.json tsconfig.json \
-            -C backend/rutas-service dist package.json package-lock.json
+            -C rutas-service dist package.json package-lock.json
+
 
 
 
