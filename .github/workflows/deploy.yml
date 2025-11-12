@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "🚀 Iniciando compilación de microservicios..."
 
-          SERVICES=("microservicio-usuarios" "microservicio-rutas" "microservicio-reportes")
+          SERVICES=("backend" "rutas-service" )
 
           for SERVICE in "${SERVICES[@]}"; do
             echo "⚙️ Procesando $SERVICE..."
