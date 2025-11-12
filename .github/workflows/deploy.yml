@@ -72,7 +72,7 @@ jobs:
 
       - name: ⚡ Desplegar backend en servidor
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+          ssh -o StrictHostKeyChecking=no ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} '
             echo "🧹 Limpiando /var/www/joan_site/backend..."
             mkdir -p /var/www/joan_site/backend
             rm -rf /var/www/joan_site/backend/*
@@ -100,18 +100,19 @@ jobs:
             cd /var/www/joan_site/backend
             npm install --omit=dev
             pm2 delete backend || true
-            pm2 start dist/main.js --name backend --time
+            pm2 start dist/src/main.js --name backend --time
 
             # --- Servicio de rutas ---
             cd /var/www/joan_site/backend/rutas-service
             npm install --omit=dev
             pm2 delete rutas-service || true
-            pm2 start dist/main.js --name rutas-service --time
+            pm2 start dist/src/main.js --name rutas-service --time
 
             pm2 save
             pm2 status
             echo "✅ Todos los microservicios desplegados correctamente."
           '
+
 
 
 
