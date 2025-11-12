@@ -20,7 +20,7 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_UR }}
+      GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
       ROUTES_SERVICE_URL: ${{ secrets.ROUTES_SERVICE_URL }}
 
     steps:
@@ -41,6 +41,7 @@ jobs:
           echo "📂 Construyendo backend principal..."
           npm ci
           npm run build
+
           echo "📂 Construyendo rutas-service..."
           cd rutas-service
           npm ci
@@ -55,26 +56,31 @@ jobs:
 
       - name: 📦 Empaquetar backend
         run: |
-          tar -czf deploy.tar.gz \
-            --exclude='**/Dockerfile' \
-            --exclude='**/docker-compose.yml' \
-            -C backend dist package.json package-lock.json tsconfig.json \
-            -C rutas-service dist package.json package-lock.json
+          cd backend
+          tar -czf ../deploy.tar.gz \
+            --exclude='Dockerfile' \
+            --exclude='docker-compose.yml' \
+            --exclude='rutas-service/Dockerfile' \
+            --exclude='rutas-service/docker-compose.yml' \
+            dist package.json package-lock.json tsconfig.json rutas-service
+          cd ..
 
 
-
-
+      # 6️⃣ Preparar directorio remoto
       - name: 🛠️ Preparar directorio remoto para backend
         run: |
           ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
             mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
           '
-      - name: 🚚 Subir paquete al servidor
-        run: scp -o StrictHostKeyChecking=no deploy.tar.gz ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
+      # 7️⃣ Subir paquete al servidor
+      - name: 🚚 Subir paquete al servidor
+        run: scp -o StrictHostKeyChecking=no deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/eco_backend/
+
+      # 8️⃣ Desplegar backend y rutas-service
       - name: ⚡ Desplegar backend en servidor
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} '
+          ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
             echo "🧹 Limpiando /var/www/joan_site/backend..."
             mkdir -p /var/www/joan_site/backend
             rm -rf /var/www/joan_site/backend/*
