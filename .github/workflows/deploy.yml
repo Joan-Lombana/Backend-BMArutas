@@ -7,81 +7,57 @@ on:
 
 jobs:
   deploy:
-    name: 📦 Desplegar backend en servidor remoto
     runs-on: ubuntu-latest
 
     steps:
-      # -------------------------------
-      # 1️⃣ Clonar el repositorio
-      # -------------------------------
-      - name: 🧩 Checkout del código
-        uses: actions/checkout@v4
+      # 1️⃣ Clonar repositorio
+      - uses: actions/checkout@v4
 
-      # -------------------------------
       # 2️⃣ Configurar Node.js
-      # -------------------------------
-      - name: ⚙️ Configurar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      # -------------------------------
-      # 3️⃣ Instalar dependencias y construir los servicios
-      # -------------------------------
-      - name: 🏗️ Build de microservicios
+      # 3️⃣ Build microservicios
+      - name: 🏗️ Build backend y rutas-service
         run: |
-          SERVICES=("backend" "rutas-service")
-          for SERVICE in "${SERVICES[@]}"; do
-            echo "📂 Construyendo $SERVICE..."
-            cd $SERVICE
-            npm install
-            npm run build
-            cd ..
-          done
+          cd backend
+          npm ci
+          npm run build
+          cd rutas-service
+          npm ci
+          npm run build
+          cd ..
 
-      # -------------------------------
-      # 4️⃣ Crear archivo comprimido temporal
-      # -------------------------------
-      - name: 📦 Empaquetar builds
+      # 4️⃣ Empaquetar builds
+      - name: 📦 Crear archivo deploy
         run: |
-          mkdir -p /tmp/deploy
-          SERVICES=("backend" "rutas-service")
-          for SERVICE in "${SERVICES[@]}"; do
-            cp -r $SERVICE/dist /tmp/deploy/$SERVICE
-            cp -r $SERVICE/package*.json /tmp/deploy/$SERVICE
-          done
-          tar -czf deploy.tar.gz -C /tmp deploy
+          tar -czf deploy.tar.gz -C backend backend rutas-service
 
-      # -------------------------------
-      # 5️⃣ Enviar y desplegar al servidor remoto
-      # -------------------------------
-      - name: ⚡ Desplegar en servidor remoto
+      # 5️⃣ Subir y desplegar al servidor
+      - name: ⚡ Deploy en servidor remoto
         env:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          echo "🚀 Conectando con el servidor..."
-          scp -o StrictHostKeyChecking=no deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/
-
-          ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
-            echo "🧹 Limpiando versiones anteriores..."
-            SERVICES=("backend" "rutas-service")
-
-            for SERVICE in "${SERVICES[@]}"; do
-              echo "⚙️ Desplegando $SERVICE..."
-              rm -rf /var/www/joan_site/backend/$SERVICE
-              mkdir -p /var/www/joan_site/backend/$SERVICE
-              tar -xzf /tmp/deploy.tar.gz -C /var/www/joan_site/backend/
-              cd /var/www/joan_site/backend/$SERVICE
-              echo "📦 Instalando dependencias de producción..."
-              npm install --omit=dev
-
-              echo "🔁 Reiniciando PM2 para $SERVICE..."
-              pm2 delete $SERVICE || true
-              pm2 start dist/main.js --name $SERVICE --time
-            done
-
+          scp deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/
+          ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOF'
+            rm -rf /var/www/joan_site/backend/backend
+            rm -rf /var/www/joan_site/backend/rutas-service
+            mkdir -p /var/www/joan_site/backend
+            tar -xzf /tmp/deploy.tar.gz -C /var/www/joan_site/backend/
+            cd /var/www/joan_site/backend/backend
+            npm install --omit=dev
+            pm2 delete backend || true
+            pm2 start dist/main.js --name backend --time
+            cd ../rutas-service
+            npm install --omit=dev
+            pm2 delete rutas-service || true
+            pm2 start dist/main.js --name rutas-service --time
+            
             echo "✅ Todos los microservicios desplegados correctamente."
+          EOF
          
 
 
