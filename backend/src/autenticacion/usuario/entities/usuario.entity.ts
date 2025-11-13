@@ -4,7 +4,7 @@ import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
 
 @Entity('usuarios')
 export class Usuario {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @Column({ length: 100 })

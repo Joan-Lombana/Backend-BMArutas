@@ -1,15 +1,31 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity'; 
+import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
 
+export enum TipoRol {
+  ADMIN = 'admin',
+  USUARIO = 'usuario',
+}
 
 @Entity('roles')
 export class Rol {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  @Column({ length: 50 })
-  tipo: string;
+  // Tipo de rol (enum)
+  @Column({
+    type: 'enum',
+    enum: TipoRol,
+    default: TipoRol.USUARIO,
+    unique: true,
+  })
+  tipo: TipoRol;
 
-  @OneToMany(() => Perfil, perfil => perfil.rol)
+  // Descripción opcional
+  @Column({ nullable: true })
+  descripcion?: string;
+
+  // Relación 1:N con Perfil
+  @OneToMany(() => Perfil, (perfil) => perfil.rol)
   perfiles: Perfil[];
 }
+
