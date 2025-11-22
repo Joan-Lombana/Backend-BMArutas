@@ -15,7 +15,7 @@ import { PerfilModule } from './perfil/perfil.module';
 // Controladores y servicios
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleStrategy } from './strategies/google.strategy'; // o ./guards/google.strategy
+import { GoogleStrategy } from './strategies/google.strategy';// o ./guards/google.strategy
 
 @Module({
   imports: [

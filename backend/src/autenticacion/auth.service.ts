@@ -1,41 +1,72 @@
-import { Injectable } from '@nestjs/common';
+// auth.service.ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Usuario } from './usuario/entities/usuario.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Usuario } from './usuario/entities/usuario.entity';
+import { Perfil } from './perfil/entities/perfil.entity';
+import { Rol, TipoRol } from './rol/entities/rol.entity';
+
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(Usuario)
-    private usuariosRepo: Repository<Usuario>,
+    @InjectRepository(Usuario) private usuariosRepo: Repository<Usuario>,
+    @InjectRepository(Perfil) private perfilesRepo: Repository<Perfil>,
+    @InjectRepository(Rol) private rolesRepo: Repository<Rol>,
     private jwtService: JwtService,
   ) {}
 
+
   async loginWithGoogle(profile: any) {
-    // Busca usuario existente por email
     let usuario = await this.usuariosRepo.findOne({
       where: { correo: profile.email },
+      relations: ['perfil', 'perfil.rol'],
     });
 
-    // Si no existe, lo crea
     if (!usuario) {
+      const totalUsuarios = await this.usuariosRepo.count();
+      const rolAdmin = await this.rolesRepo.findOne({ where: { tipo: TipoRol.ADMIN } });
+      const rolUsuario = await this.rolesRepo.findOne({ where: { tipo: TipoRol.USUARIO } });
+
+      const rolSeleccionado = totalUsuarios < 3 ? rolAdmin : rolUsuario;
+
       usuario = this.usuariosRepo.create({
         nombre: profile.nombre,
+        apellido: profile.apellido,
         correo: profile.email,
         foto: profile.foto,
         activo: true,
       });
       await this.usuariosRepo.save(usuario);
+
+      const perfil = this.perfilesRepo.create({
+        estado: 'activo',
+        personalizacion: {},
+        usuario,
+        rol: rolSeleccionado,
+      });
+      await this.perfilesRepo.save(perfil);
+
+      usuario.perfil = perfil;
+      await this.usuariosRepo.save(usuario);
     }
 
-    // Genera token JWT
-    const payload = { sub: usuario.id, correo: usuario.correo };
+    if (!usuario.perfil || !usuario.perfil.rol) {
+      throw new Error('El usuario no tiene un perfil o rol asignado');
+    }
+
+    const payload = {
+      sub: usuario.id,
+      correo: usuario.correo,
+      rol: usuario.perfil.rol.tipo,
+    };
+
     const token = this.jwtService.sign(payload);
 
-    return {
-      access_token: token,
-      usuario,
-    };
+    return { access_token: token, usuario };
   }
 }
+
+
+

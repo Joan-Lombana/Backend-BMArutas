@@ -14,7 +14,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '123456',
   database: process.env.DB_NAME || 'ecoruta',
-  synchronize: false, // ❌ las migraciones manejan el esquema
+  synchronize: process.env.NODE_ENV !== 'production', // ✅ solo true en dev
   logging: true,
   entities: [Usuario, Rol, Perfil],
   migrations: ['src/migrations/*.ts'],

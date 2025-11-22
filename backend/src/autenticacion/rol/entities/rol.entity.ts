@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
+import { Perfil } from '../../perfil/entities/perfil.entity';
+
 
 export enum TipoRol {
   ADMIN = 'admin',
@@ -9,14 +10,15 @@ export enum TipoRol {
 @Entity('roles')
 export class Rol {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
+
 
   // Tipo de rol (enum)
   @Column({
     type: 'enum',
     enum: TipoRol,
     default: TipoRol.USUARIO,
-    unique: true,
+    
   })
   tipo: TipoRol;
 

@@ -5,13 +5,12 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {
-      super({
-    clientID: process.env.GOOGLE_CLIENT_ID ?? (() => { throw new Error('GOOGLE_CLIENT_ID is missing'); })(),
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? (() => { throw new Error('GOOGLE_CLIENT_SECRET is missing'); })(),
-    callbackURL: process.env.GOOGLE_CALLBACK_URL ?? (() => { throw new Error('GOOGLE_CALLBACK_URL is missing'); })(),
-    scope: ['email', 'profile'],
-    passReqToCallback: true,
-});
+    super({
+      clientID: process.env.GOOGLE_CLIENT_ID ?? (() => { throw new Error('GOOGLE_CLIENT_ID missing'); })(),
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? (() => { throw new Error('GOOGLE_CLIENT_SECRET missing'); })(),
+      callbackURL: process.env.GOOGLE_CALLBACK_URL ?? (() => { throw new Error('GOOGLE_CALLBACK_URL missing'); })(),
+      scope: ['email', 'profile'],
+    });
   }
 
   async validate(
@@ -31,3 +30,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done(null, user);
   }
 }
+
+
+
+

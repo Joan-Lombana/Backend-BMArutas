@@ -24,17 +24,14 @@ jobs:
       ROUTES_SERVICE_URL: ${{ secrets.ROUTES_SERVICE_URL }}
 
     steps:
-      # 1️⃣ Clonar repositorio
       - name: 🧩 Checkout del código
         uses: actions/checkout@v4
 
-      # 2️⃣ Configurar Node.js
       - name: ⚙️ Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 3️⃣ Construir microservicios
       - name: 🏗️ Construir microservicios
         run: |
           cd backend
@@ -48,7 +45,6 @@ jobs:
           npm run build
           cd ..
 
-      # 4️⃣ Configurar SSH
       - name: 🔑 Configurar SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -65,19 +61,15 @@ jobs:
             dist package.json package-lock.json tsconfig.json rutas-service
           cd ..
 
-
-      # 6️⃣ Preparar directorio remoto
       - name: 🛠️ Preparar directorio remoto para backend
         run: |
           ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
             mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
           '
 
-      # 7️⃣ Subir paquete al servidor
       - name: 🚚 Subir paquete al servidor
         run: scp -o StrictHostKeyChecking=no deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/eco_backend/
 
-      # 8️⃣ Desplegar backend y rutas-service
       - name: ⚡ Desplegar backend en servidor
         run: |
           ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
@@ -107,6 +99,10 @@ jobs:
             # --- Backend principal ---
             cd /var/www/joan_site/backend
             npm install --omit=dev
+
+            # 🌱 Ejecutar seeder (roles)
+            npm run seed:roles || true
+
             pm2 delete backend || true
             pm2 start dist/src/main.js --name backend --time
 
@@ -120,6 +116,7 @@ jobs:
             pm2 status
             echo "✅ Todos los microservicios desplegados correctamente."
           '
+
 
 
 

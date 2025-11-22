@@ -3,8 +3,15 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors(); // ✅ permite solicitudes desde el frontend o Postman
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0'); // ✅ escucha en todas las interfaces
+
+  app.enableCors({
+    origin: 'http://localhost:4200',
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
   console.log(`🚀 Servidor corriendo en http://0.0.0.0:${process.env.PORT ?? 3000}`);
 }
 bootstrap();

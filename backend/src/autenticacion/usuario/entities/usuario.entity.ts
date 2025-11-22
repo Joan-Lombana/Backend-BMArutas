@@ -5,7 +5,8 @@ import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
 @Entity('usuarios')
 export class Usuario {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
+
 
   @Column({ length: 100 })
   nombre: string;
@@ -16,6 +17,10 @@ export class Usuario {
   @Column({ unique: true })
   correo: string;
 
+  @Column({ nullable: true })
+  contrasena: string;
+
+
   @Column({ length: 15, nullable: true })
   numero_celular: string;
 
@@ -25,7 +30,7 @@ export class Usuario {
   @Column({ default: true })
   activo: boolean;
 
-  @OneToOne(() => Perfil, perfil => perfil.usuario, { cascade: true })
+  @OneToOne(() => Perfil, perfil => perfil.usuario)
   @JoinColumn()
   perfil: Perfil;
 }
