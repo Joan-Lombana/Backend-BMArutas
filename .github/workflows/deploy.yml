@@ -34,12 +34,12 @@ jobs:
 
       - name: 🏗️ Construir microservicios
         run: |
+          # --- Backend principal ---
           cd backend
-          echo "📂 Construyendo backend principal..."
           npm ci
           npm run build
 
-          echo "📂 Construyendo rutas-service..."
+          # --- Servicio de rutas ---
           cd rutas-service
           npm ci
           npm run build
@@ -61,7 +61,7 @@ jobs:
             dist package.json package-lock.json tsconfig.json rutas-service
           cd ..
 
-      - name: 🛠️ Preparar directorio remoto para backend
+      - name: 🛠️ Preparar directorio remoto
         run: |
           ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
             mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
@@ -94,19 +94,20 @@ jobs:
             echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
             echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
 
-            echo "📦 Instalando dependencias y reiniciando microservicios..."
-
-            # --- Backend principal ---
+            echo "📦 Instalando dependencias..."
             cd /var/www/joan_site/backend
             npm install --omit=dev
 
-            # 🌱 Ejecutar seeder (roles)
-            npm run seed:roles || true
+            # 🌱 Ejecutar seeders desde dist/ (producción)
+            if [ -f dist/autenticacion/rol/seed/roles.seeder.js ]; then
+              node dist/autenticacion/rol/seed/roles.seeder.js || true
+            fi
 
+            # 🔹 Backend principal
             pm2 delete backend || true
             pm2 start dist/src/main.js --name backend --time
 
-            # --- Servicio de rutas ---
+            # 🔹 Servicio rutas
             cd /var/www/joan_site/backend/rutas-service
             npm install --omit=dev
             pm2 delete rutas-service || true
@@ -116,6 +117,7 @@ jobs:
             pm2 status
             echo "✅ Todos los microservicios desplegados correctamente."
           '
+
 
 
 
