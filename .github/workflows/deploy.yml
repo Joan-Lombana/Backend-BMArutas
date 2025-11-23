@@ -22,11 +22,11 @@ jobs:
         run: |
           cd backend
           npm ci
-          npm run build  # build genera dist/src
-          
+          npm run build   # genera dist/src
+
           cd rutas-service
           npm ci
-          npm run build  # build genera dist/
+          npm run build   # ahora genera dist/src
 
           cd ../..
 
@@ -40,7 +40,7 @@ jobs:
           cd backend
           tar -czf ../deploy.tar.gz \
             dist/src \
-            rutas-service/dist \
+            rutas-service/dist/src \
             rutas-service/package.json \
             rutas-service/package-lock.json \
             package.json package-lock.json tsconfig.json
@@ -105,13 +105,14 @@ jobs:
             pm2 delete rutas-service || true
 
             pm2 start /var/www/joan_site/backend/dist/src/main.js --name backend --time
-            pm2 start /var/www/joan_site/backend/rutas-service/dist/main.js --name rutas-service --time
+            pm2 start /var/www/joan_site/backend/rutas-service/dist/src/main.js --name rutas-service --time
 
             pm2 save
             pm2 status
 
             echo "✅ Deploy finalizado correctamente."
           '
+
 
 
 
