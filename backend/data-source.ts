@@ -5,18 +5,23 @@ import { Usuario } from './src/autenticacion/usuario/entities/usuario.entity';
 import { Rol } from './src/autenticacion/rol/entities/rol.entity';
 import { Perfil } from './src/autenticacion/perfil/entities/perfil.entity';
 import * as dotenv from 'dotenv';
+
 dotenv.config();
+
+if (!process.env.DB_HOST || !process.env.DB_PORT || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+  throw new Error('Faltan variables de entorno de la base de datos. Revisa tu archivo .env');
+}
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST || 'ecoruta-postgis', // nombre del contenedor Docker
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgresjoan',
-  password: process.env.DB_PASSWORD || 'grj123456',
-  database: process.env.DB_NAME || 'bmarutas',
-  synchronize: process.env.NODE_ENV !== 'production', // ✅ solo true en dev
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  synchronize: process.env.NODE_ENV !== 'production',
   logging: true,
   entities: [Usuario, Rol, Perfil],
   migrations: ['src/migrations/*.ts'],
-  ssl: false,
+  ssl: process.env.DB_SSL === 'true', // opcional, se activa solo si lo configuras en .env
 });
