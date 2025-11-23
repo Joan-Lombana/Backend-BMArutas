@@ -9,20 +9,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    env:
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASS: ${{ secrets.DB_PASS }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
-      ROUTES_SERVICE_URL: ${{ secrets.ROUTES_SERVICE_URL }}
-
     steps:
       - name: 🧩 Checkout del código
         uses: actions/checkout@v4
@@ -32,18 +18,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🏗️ Construir microservicios
+      - name: 🏗️ Construir backend
         run: |
-          # --- Backend principal ---
           cd backend
           npm ci
           npm run build
 
-          # --- Servicio de rutas ---
           cd rutas-service
           npm ci
           npm run build
-          cd ..
+          cd ../..
 
       - name: 🔑 Configurar SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -54,33 +38,48 @@ jobs:
         run: |
           cd backend
           tar -czf ../deploy.tar.gz \
-            --exclude='Dockerfile' \
-            --exclude='docker-compose.yml' \
-            --exclude='rutas-service/Dockerfile' \
-            --exclude='rutas-service/docker-compose.yml' \
-            dist package.json package-lock.json tsconfig.json rutas-service
+            dist \
+            rutas-service/dist \
+            rutas-service/package.json \
+            rutas-service/package-lock.json \
+            package.json package-lock.json tsconfig.json
           cd ..
 
       - name: 🛠️ Preparar directorio remoto
         run: |
-          ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
           '
 
       - name: 🚚 Subir paquete al servidor
-        run: scp -o StrictHostKeyChecking=no deploy.tar.gz $DEPLOY_USER@$DEPLOY_HOST:/tmp/eco_backend/
-
-      - name: ⚡ Desplegar backend en servidor
         run: |
-          ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST '
-            echo "🧹 Limpiando /var/www/joan_site/backend..."
+          scp -o StrictHostKeyChecking=no deploy.tar.gz \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
+
+      - name: ⚡ Desplegar en el servidor
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+            
+            echo "⬇️ Exportando variables de entorno..."
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PORT="${{ secrets.DB_PORT }}"
+            export DB_NAME="${{ secrets.DB_NAME }}"
+            export DB_USER="${{ secrets.DB_USER }}"
+            export DB_PASS="${{ secrets.DB_PASS }}"
+            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+            export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            export GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}"
+            export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
+
+            echo "🧹 Limpiando backend anterior..."
             mkdir -p /var/www/joan_site/backend
             rm -rf /var/www/joan_site/backend/*
 
-            echo "📦 Desempaquetando backend..."
+            echo "📦 Extrayendo deploy.tar.gz..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C /var/www/joan_site/backend/
 
-            echo "📝 Generando archivo .env..."
+            echo "📝 Creando .env..."
             ENV_FILE=/var/www/joan_site/backend/.env
             > $ENV_FILE
             echo "DB_HOST=$DB_HOST" >> $ENV_FILE
@@ -98,24 +97,22 @@ jobs:
             cd /var/www/joan_site/backend
             npm install --omit=dev
 
-            # 🌱 Ejecutar seeders desde dist/ (producción)
-            if [ -f dist/autenticacion/rol/seed/roles.seeder.js ]; then
-              node dist/autenticacion/rol/seed/roles.seeder.js || true
-            fi
-
-            # 🔹 Backend principal
-            pm2 delete backend || true
-            pm2 start dist/src/main.js --name backend --time
-
-            # 🔹 Servicio rutas
+            # Servicio de rutas
             cd /var/www/joan_site/backend/rutas-service
             npm install --omit=dev
+
+            # PM2
+            echo "🔁 Reiniciando PM2..."
+            pm2 delete backend || true
             pm2 delete rutas-service || true
-            pm2 start dist/main.js --name rutas-service --time
+
+            pm2 start /var/www/joan_site/backend/dist/src/main.js --name backend --time
+            pm2 start /var/www/joan_site/backend/rutas-service/dist/main.js --name rutas-service --time
 
             pm2 save
             pm2 status
-            echo "✅ Todos los microservicios desplegados correctamente."
+
+            echo "✅ Deploy finalizado correctamente."
           '
 
 
