@@ -11,9 +11,9 @@ export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'ecoruta-postgis', // nombre del contenedor Docker
   port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '123456',
-  database: process.env.DB_NAME || 'ecoruta',
+  username: process.env.DB_USER || 'postgresjoan',
+  password: process.env.DB_PASSWORD || 'grj123456',
+  database: process.env.DB_NAME || 'bmarutas',
   synchronize: process.env.NODE_ENV !== 'production', // ✅ solo true en dev
   logging: true,
   entities: [Usuario, Rol, Perfil],
