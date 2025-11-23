@@ -106,7 +106,7 @@ jobs:
             pm2 delete backend || true
             pm2 delete rutas-service || true
 
-            pm2 start /var/www/joan_site/backend/dist/main.js --name backend --time
+            pm2 start /var/www/joan_site/backend/dist/src/main.js --name backend --time
             pm2 start /var/www/joan_site/backend/rutas-service/dist/main.js --name rutas-service --time
 
             pm2 save
