@@ -1,7 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import 'dotenv/config';
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Ruta absoluta al .env que está en el nivel superior
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+
 
 
 async function bootstrap() {
