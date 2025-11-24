@@ -59,10 +59,10 @@ jobs:
           scp -o StrictHostKeyChecking=no deploy.tar.gz \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
-      - name: ⚡ Desplegar en el servidor
+            - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-            echo "⬇️ Exportando variables de entorno..."
+            echo "⬇️ Exportando variables..."
             export DB_HOST="${{ secrets.DB_HOST }}"
             export DB_PORT="${{ secrets.DB_PORT }}"
             export DB_NAME="${{ secrets.DB_NAME }}"
@@ -74,15 +74,17 @@ jobs:
             export GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}"
             export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
 
-            echo "🧹 Limpiando backend anterior..."
-            rm -rf /var/www/joan_site/backend/*
-            mkdir -p /var/www/joan_site/backend
+            ROOT=/var/www/joan_site/BMArutas-Backend
+
+            echo "🧹 Limpiando deploy anterior..."
+            rm -rf $ROOT
+            mkdir -p $ROOT
 
             echo "📦 Extrayendo deploy.tar.gz..."
-            tar -xzf /tmp/eco_backend/deploy.tar.gz -C /var/www/joan_site/backend/
+            tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📝 Creando .env..."
-            ENV_FILE=/var/www/joan_site/backend/.env
+            echo "📝 Creando .env en backend..."
+            ENV_FILE=$ROOT/backend/.env
             > $ENV_FILE
             echo "DB_HOST=$DB_HOST" >> $ENV_FILE
             echo "DB_PORT=$DB_PORT" >> $ENV_FILE
@@ -95,26 +97,26 @@ jobs:
             echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
             echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
 
-            echo "📦 Instalando dependencias (backend)..."
-            cd /var/www/joan_site/backend
+            echo "📦 Instalando dependencias..."
+            cd $ROOT/backend
             npm install --omit=dev
 
-            echo "📦 Instalando dependencias (rutas-service)..."
-            cd /var/www/joan_site/backend/rutas-service
+            cd $ROOT/rutas-service
             npm install --omit=dev
 
             echo "🔁 Reiniciando PM2..."
             pm2 delete backend || true
             pm2 delete rutas-service || true
 
-            pm2 start /var/www/joan_site/backend/dist/src/main.js --name backend --time
-            pm2 start /var/www/joan_site/backend/rutas-service/dist/main.js --name rutas-service --time
+            pm2 start $ROOT/backend/dist/src/main.js --name backend --time
+            pm2 start $ROOT/rutas-service/dist/main.js --name rutas-service --time
 
             pm2 save
             pm2 status
 
             echo "✅ Deploy finalizado correctamente."
           '
+
 
 
 
