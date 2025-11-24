@@ -20,6 +20,7 @@ jobs:
 
       - name: 🏗️ Construir backend y rutas-service
         run: |
+          echo "🏗️ Construyendo backend..."
           cd backend
           npm ci
           npm run build
@@ -36,18 +37,16 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: 📦 Empaquetar backend
+      - name: 📦 Empaquetar backend + rutas-service
         run: |
-          cd backend
           tar -czf deploy.tar.gz \
-          backend/dist \
-          backend/package.json \
-          backend/package-lock.json \
-          backend/tsconfig.json \
-          rutas-service/dist \
-          rutas-service/package.json \
-          rutas-service/package-lock.json
-
+            backend/dist \
+            backend/package.json \
+            backend/package-lock.json \
+            backend/tsconfig.json \
+            rutas-service/dist \
+            rutas-service/package.json \
+            rutas-service/package-lock.json
 
       - name: 🛠️ Preparar directorio remoto
         run: |
@@ -76,8 +75,8 @@ jobs:
             export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
 
             echo "🧹 Limpiando backend anterior..."
-            mkdir -p /var/www/joan_site/backend
             rm -rf /var/www/joan_site/backend/*
+            mkdir -p /var/www/joan_site/backend
 
             echo "📦 Extrayendo deploy.tar.gz..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C /var/www/joan_site/backend/
@@ -96,10 +95,11 @@ jobs:
             echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
             echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
 
-            echo "📦 Instalando dependencias..."
+            echo "📦 Instalando dependencias (backend)..."
             cd /var/www/joan_site/backend
             npm install --omit=dev
 
+            echo "📦 Instalando dependencias (rutas-service)..."
             cd /var/www/joan_site/backend/rutas-service
             npm install --omit=dev
 
