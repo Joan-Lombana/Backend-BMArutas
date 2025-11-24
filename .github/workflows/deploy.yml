@@ -40,7 +40,7 @@ jobs:
           cd backend
           tar -czf ../deploy.tar.gz \
             dist/src \
-            rutas-service/dist/src \
+            rutas-service/dist/ \
             rutas-service/package.json \
             rutas-service/package-lock.json \
             package.json package-lock.json tsconfig.json
@@ -105,7 +105,7 @@ jobs:
             pm2 delete rutas-service || true
 
             pm2 start /var/www/joan_site/backend/dist/src/main.js --name backend --time
-            pm2 start /var/www/joan_site/backend/rutas-service/dist/src/main.js --name rutas-service --time
+            pm2 start /var/www/joan_site/backend/rutas-service/dist/main.js --name rutas-service --time
 
             pm2 save
             pm2 status
