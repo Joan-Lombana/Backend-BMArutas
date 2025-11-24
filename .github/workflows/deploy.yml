@@ -63,16 +63,16 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             echo "⬇️ Exportando variables..."
+            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
+            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+            export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
             export DB_HOST="${{ secrets.DB_HOST }}"
             export DB_PORT="${{ secrets.DB_PORT }}"
-            export DB_NAME="${{ secrets.DB_NAME }}"
-            export DB_USER="${{ secrets.DB_USER }}"
-            export DB_PASS="${{ secrets.DB_PASS }}"
-            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
             export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
             export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
             export GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}"
-            export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
+            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
 
             ROOT=/var/www/joan_site/BMArutas-Backend
 
@@ -86,16 +86,16 @@ jobs:
             echo "📝 Creando .env en backend..."
             ENV_FILE=$ROOT/.env
             > $ENV_FILE
+            echo "POSTGRES_USER=$POSTGRES_USER" >> $ENV_FILE
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $ENV_FILE
+            echo "POSTGRES_DB=$POSTGRES_DB" >> $ENV_FILE
             echo "DB_HOST=$DB_HOST" >> $ENV_FILE
             echo "DB_PORT=$DB_PORT" >> $ENV_FILE
-            echo "DB_NAME=$DB_NAME" >> $ENV_FILE
-            echo "DB_USER=$DB_USER" >> $ENV_FILE
-            echo "DB_PASS=$DB_PASS" >> $ENV_FILE
-            echo "JWT_SECRET=$JWT_SECRET" >> $ENV_FILE
+            echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
             echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> $ENV_FILE
             echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> $ENV_FILE
             echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
-            echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
+            echo "JWT_SECRET=$JWT_SECRET" >> $ENV_FILE
 
             echo "📦 Instalando dependencias..."
             cd $ROOT/backend
@@ -116,6 +116,7 @@ jobs:
 
             echo "✅ Deploy finalizado correctamente."
           '
+
 
 
 
