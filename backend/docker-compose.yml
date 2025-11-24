@@ -37,7 +37,7 @@ services:
     depends_on:
       - postgis
     environment:
-      DB_HOST: ecoruta-postgis
+      DB_HOST: ${DB_HOST}
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
