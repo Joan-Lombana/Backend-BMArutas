@@ -50,16 +50,16 @@ jobs:
 
       - name: 🛠️ Preparar directorio remoto
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-            mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/
-          '
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            'mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/'
 
       - name: 🚚 Subir paquete al servidor
         run: |
           scp -o StrictHostKeyChecking=no deploy.tar.gz \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
-            - name: ⚡ Desplegar en el servidor
+      - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             echo "⬇️ Exportando variables..."
@@ -116,6 +116,7 @@ jobs:
 
             echo "✅ Deploy finalizado correctamente."
           '
+
 
 
 
