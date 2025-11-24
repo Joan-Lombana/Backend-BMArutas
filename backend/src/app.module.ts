@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './autenticacion/auth.module';
 import { OperativoModule } from './operativo/operativo.module';
-import { ApilucioModule } from 'rutas-service/src/apilucio/apilucio.module';
+
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { ApilucioModule } from 'rutas-service/src/apilucio/apilucio.module';
   }),
     AuthModule,
     OperativoModule,
-    ApilucioModule,
+   
   ],
   controllers: [AppController],
   providers: [AppService],

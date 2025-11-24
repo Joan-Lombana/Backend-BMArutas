@@ -22,13 +22,14 @@ jobs:
         run: |
           cd backend
           npm ci
-          npm run build   # genera dist/src
+          npm run build
+          cd ..
 
+          echo "🏗️ Construyendo rutas-service..."
           cd rutas-service
           npm ci
-          npm run build   # ahora genera dist/src
-
-          cd ../..
+          npm run build
+          cd ..
 
       - name: 🔑 Configurar SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -38,13 +39,15 @@ jobs:
       - name: 📦 Empaquetar backend
         run: |
           cd backend
-          tar -czf ../deploy.tar.gz \
-            dist/src \
-            rutas-service/dist/ \
-            rutas-service/package.json \
-            rutas-service/package-lock.json \
-            package.json package-lock.json tsconfig.json
-          cd ..
+          tar -czf deploy.tar.gz \
+          backend/dist \
+          backend/package.json \
+          backend/package-lock.json \
+          backend/tsconfig.json \
+          rutas-service/dist \
+          rutas-service/package.json \
+          rutas-service/package-lock.json
+
 
       - name: 🛠️ Preparar directorio remoto
         run: |

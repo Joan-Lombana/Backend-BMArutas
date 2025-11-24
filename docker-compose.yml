@@ -29,7 +29,8 @@ services:
       - ecoruta_net
 
   rutas-service:
-    build: ./rutas-service
+    build:
+      context: ./rutas-service
     container_name: rutas-service
     restart: always
     ports:
@@ -37,7 +38,7 @@ services:
     depends_on:
       - postgis
     environment:
-      DB_HOST: ${DB_HOST}
+      DB_HOST: postgis
       DB_PORT: 5432
       DB_USER: ${POSTGRES_USER}
       DB_PASS: ${POSTGRES_PASSWORD}
@@ -46,7 +47,8 @@ services:
       - ecoruta_net
 
   backend:
-    build: .
+    build:
+      context: ./backend
     container_name: backend
     restart: always
     ports:
@@ -54,6 +56,8 @@ services:
     depends_on:
       - rutas-service
       - postgis
+    environment:
+      ROUTES_SERVICE_URL: ${ROUTES_SERVICE_URL}
     env_file:
       - ./.env
     networks:
@@ -65,3 +69,4 @@ networks:
 volumes:
   postgis_data:
   pgadmin-data:
+
