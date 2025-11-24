@@ -84,7 +84,7 @@ jobs:
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
             echo "📝 Creando .env en backend..."
-            ENV_FILE=$ROOT/backend/.env
+            ENV_FILE=$ROOT/.env
             > $ENV_FILE
             echo "DB_HOST=$DB_HOST" >> $ENV_FILE
             echo "DB_PORT=$DB_PORT" >> $ENV_FILE
