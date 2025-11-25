@@ -1,49 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
 
 @Controller('operativo')
 export class OperativoController {
   constructor(private readonly operativoService: OperativoService) {}
 
-  // === RUTAS ===
-  @Get('rutas')
-  obtenerRutas(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerRutasDesdeMicroservicio(perfil_id);
-  }
-
-  @Post('rutas')
-  crearRuta(@Body() body: any) {
-    return this.operativoService.crearRuta(body);
-  }
-
-  @Get('rutas/:id')
-  obtenerRutaPorId(@Param('id') id: string) {
-    return this.operativoService.obtenerRutaPorId(id);
-  }
-
-  @Put('rutas/:id')
-  actualizarRuta(@Param('id') id: string, @Body() body: any) {
-    return this.operativoService.actualizarRuta(id, body);
-  }
-
-  @Delete('rutas/:id')
-  eliminarRuta(@Param('id') id: string) {
-    return this.operativoService.eliminarRuta(id);
-  }
-
   // === VEHÍCULOS ===
   @Get('vehiculos')
   obtenerVehiculos(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerVehiculosDesdeMicroservicio(perfil_id);
+    return this.operativoService.obtenerVehiculosPorPerfil(perfil_id);
   }
 
   @Post('vehiculos')
@@ -66,10 +31,36 @@ export class OperativoController {
     return this.operativoService.eliminarVehiculo(id);
   }
 
+  // === RUTAS ===
+  @Get('rutas')
+  obtenerRutas(@Query('perfil_id') perfil_id: string) {
+    return this.operativoService.obtenerRutasPorPerfil(perfil_id);
+  }
+
+  @Post('rutas')
+  crearRuta(@Body() body: any) {
+    return this.operativoService.crearRuta(body);
+  }
+
+  @Get('rutas/:id')
+  obtenerRutaPorId(@Param('id') id: string) {
+    return this.operativoService.obtenerRutaPorId(id);
+  }
+
+  @Put('rutas/:id')
+  actualizarRuta(@Param('id') id: string, @Body() body: any) {
+    return this.operativoService.actualizarRuta(id, body);
+  }
+
+  @Delete('rutas/:id')
+  eliminarRuta(@Param('id') id: string) {
+    return this.operativoService.eliminarRuta(id);
+  }
+
   // === HORARIOS ===
   @Get('horarios')
   obtenerHorarios(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerHorariosDesdeMicroservicio(perfil_id);
+    return this.operativoService.obtenerHorariosPorPerfil(perfil_id);
   }
 
   @Post('horarios')
@@ -95,7 +86,7 @@ export class OperativoController {
   // === RECORRIDOS ===
   @Get('recorridos')
   obtenerRecorridos(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerRecorridosDesdeMicroservicio(perfil_id);
+    return this.operativoService.obtenerRecorridosPorPerfil(perfil_id);
   }
 
   @Post('recorridos')
@@ -120,8 +111,8 @@ export class OperativoController {
 
   // === POSICIONES ===
   @Get('recorridos/:id/posiciones')
-  obtenerPosiciones(@Param('id') recorridoId: number) {
-    return this.operativoService.obtenerPosicionesDesdeMicroservicio(recorridoId);
+  obtenerPosiciones(@Param('id') recorridoId: string) {
+    return this.operativoService.obtenerPosiciones(recorridoId);
   }
 
   @Post('recorridos/:id/posiciones')
@@ -130,34 +121,24 @@ export class OperativoController {
   }
 
   @Get('recorridos/:id/posiciones/:posicionId')
-  obtenerPosicionPorId(
-    @Param('id') recorridoId: string,
-    @Param('posicionId') posicionId: string,
-  ) {
+  obtenerPosicionPorId(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string) {
     return this.operativoService.obtenerPosicionPorId(recorridoId, posicionId);
   }
 
   @Put('recorridos/:id/posiciones/:posicionId')
-  actualizarPosicion(
-    @Param('id') recorridoId: string,
-    @Param('posicionId') posicionId: string,
-    @Body() body: any,
-  ) {
+  actualizarPosicion(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string, @Body() body: any) {
     return this.operativoService.actualizarPosicion(recorridoId, posicionId, body);
   }
 
   @Delete('recorridos/:id/posiciones/:posicionId')
-  eliminarPosicion(
-    @Param('id') recorridoId: string,
-    @Param('posicionId') posicionId: string,
-  ) {
+  eliminarPosicion(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string) {
     return this.operativoService.eliminarPosicion(recorridoId, posicionId);
   }
 
   // === CALLES ===
   @Get('calles')
   obtenerCalles() {
-    return this.operativoService.obtenerCallesDesdeMicroservicio();
+    return this.operativoService.obtenerCalles();
   }
 
   @Post('calles')
@@ -180,4 +161,8 @@ export class OperativoController {
     return this.operativoService.eliminarCalle(id);
   }
 }
+
+
+
+
 

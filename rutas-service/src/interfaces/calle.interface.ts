@@ -1,5 +1,5 @@
 export interface CalleAPI {
-  id: number;
+  id: string;
   nombre: string;
   longitud?: number;
   codigo?: string;

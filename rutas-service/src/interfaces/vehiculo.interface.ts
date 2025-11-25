@@ -1,5 +1,5 @@
 export interface VehiculoAPI {
-  id: number;
+  id: string;
   placa: string;
   modelo: string;
   marca: string;
@@ -8,4 +8,5 @@ export interface VehiculoAPI {
   activo: boolean;
   created_at?: string;
   updated_at?: string;
+  perfil_id: string
 }

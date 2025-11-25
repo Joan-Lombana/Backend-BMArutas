@@ -1,110 +1,72 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { ApilucioService } from './apilucio.service';
+import { VehiculoAPI } from '../interfaces/vehiculo.interface';
+import { BadRequestException } from '@nestjs/common';
 
 @Controller('apilucio')
 export class ApilucioController {
   constructor(private readonly apilucioService: ApilucioService) {}
 
-  // === VEHÍCULOS ===
-  @Post('vehiculos')
-  obtenerVehiculosPorPerfil(@Body('perfil_id') perfil_id: string) {
-    return this.apilucioService.obtenerVehiculos(perfil_id);
-  }
-
+  // ================= VEHÍCULOS =================
   @Get('vehiculos')
-  listarTodosLosVehiculos() {
-    return this.apilucioService.listarVehiculos();
+  async obtenerVehiculosPorPerfil(@Query('perfil_id') perfil_id: string): Promise<VehiculoAPI[]> {
+    if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
+    return this.apilucioService.obtenerVehiculosPorPerfil(perfil_id);
   }
 
   @Post('vehiculos/crear')
-  crearVehiculo(@Body() body: {
-    placa: string;
-    marca: string;
-    modelo: string;
-    activo: boolean;
-    perfil_id: string;
-  }) {
+  async crearVehiculo(@Body() body: { placa: string; perfil_id: string; marca?: string; modelo?: string; activo?: boolean }) {
     return this.apilucioService.crearVehiculo(body);
   }
 
-  // === RUTAS ===
-  @Post('rutas')
-  obtenerRutasPorPerfil(@Body('perfil_id') perfil_id: string) {
-    return this.apilucioService.obtenerRutas(perfil_id);
-  }
-
+  // ================= RUTAS =================
   @Get('rutas')
-  listarTodasLasRutas() {
+  async obtenerRutasPorPerfil(@Query('perfil_id') perfil_id: string) {
+    if (perfil_id) return this.apilucioService.obtenerRutasPorPerfil(perfil_id);
     return this.apilucioService.listarRutas();
   }
 
   @Post('rutas/crear')
-  crearRuta(@Body() body: {
-    nombre_ruta: string;
-    perfil_id: string;
-    shape?: any;
-    calles_ids?: string[];
-  }) {
+  async crearRuta(@Body() body: { nombre_ruta: string; perfil_id: string; shape?: any; calles_ids?: string[] }) {
     return this.apilucioService.crearRuta(body);
   }
 
-  // === RECORRIDOS ===
-  @Post('recorridos')
-  obtenerRecorridosPorPerfil(@Body('perfil_id') perfil_id: string) {
-    return this.apilucioService.obtenerRecorridos(perfil_id);
-  }
-
+  // ================= RECORRIDOS =================
   @Get('recorridos')
-  listarTodosLosRecorridos() {
+  async obtenerRecorridosPorPerfil(@Query('perfil_id') perfil_id: string) {
+    if (perfil_id) return this.apilucioService.obtenerRecorridosPorPerfil(perfil_id);
     return this.apilucioService.listarRecorridos();
   }
 
   @Post('recorridos/iniciar')
-  iniciarRecorrido(@Body() body: {
-    ruta_id: string;
-    vehiculo_id: string;
-    perfil_id: string;
-  }) {
+  async iniciarRecorrido(@Body() body: { ruta_id: string; vehiculo_id: string; perfil_id: string }) {
     return this.apilucioService.iniciarRecorrido(body);
   }
 
-  // === POSICIONES ===
-  @Post('recorridos/:id/posiciones')
-  registrarPosicion(
-    @Param('id') recorridoId: string,
-    @Body() body: {
-      lat: number;
-      lon: number;
-      perfil_id: string;
-    }
-  ) {
-    return this.apilucioService.registrarPosicion(recorridoId, body);
-  }
-
+  // ================= POSICIONES =================
   @Get('posiciones')
-  listarTodasLasPosiciones() {
+  async listarTodasLasPosiciones() {
     return this.apilucioService.listarPosiciones();
   }
 
-  // === CALLES ===
-  @Post('calles')
-  obtenerCallesPorPerfil(@Body('perfil_id') perfil_id: string) {
-    return this.apilucioService.obtenerCalles(perfil_id);
+  @Post('recorridos/:id/posiciones')
+  async registrarPosicion(@Param('id') recorridoId: string, @Body() body: { lat: number; lon: number; perfil_id: string }) {
+    return this.apilucioService.registrarPosicion(recorridoId, body);
   }
 
+  // ================= CALLES =================
   @Get('calles')
-  listarTodasLasCalles() {
+  async obtenerCallesPorPerfil(@Query('perfil_id') perfil_id: string) {
+    if (perfil_id) return this.apilucioService.obtenerCallesPorPerfil(perfil_id);
     return this.apilucioService.listarCalles();
   }
 
-  // === HORARIOS ===
-  @Post('horarios')
-  obtenerHorariosPorPerfil(@Body('perfil_id') perfil_id: string) {
-    return this.apilucioService.obtenerHorarios(perfil_id);
-  }
-
+  // ================= HORARIOS =================
   @Get('horarios')
-  listarTodosLosHorarios() {
+  async obtenerHorariosPorPerfil(@Query('perfil_id') perfil_id: string) {
+    if (perfil_id) return this.apilucioService.obtenerHorariosPorPerfil(perfil_id);
     return this.apilucioService.listarHorarios();
   }
 }
+
+
