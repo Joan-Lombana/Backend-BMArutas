@@ -1,8 +1,8 @@
 export interface VehiculoAPI {
   id: string;
   placa: string;
-  modelo: string;
-  marca: string;
+  modelo?: string;
+  marca?: string;
   capacidad: number;
   tipo: string;
   activo: boolean;

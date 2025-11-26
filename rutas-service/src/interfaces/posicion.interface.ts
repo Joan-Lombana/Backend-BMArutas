@@ -1,10 +1,12 @@
+// posicion.interface.ts
 export interface PosicionAPI {
-  id: number;
-  recorrido_id: number;
-  latitud: number;
-  longitud: number;
-  velocidad?: number;
-  timestamp: string; // Fecha/hora del punto GPS
+  id: string;
+  recorrido_id: string;
+  lat: number;
+  lon: number;
+  perfil_id: string;
+  fecha?: string;
   created_at?: string;
   updated_at?: string;
 }
+

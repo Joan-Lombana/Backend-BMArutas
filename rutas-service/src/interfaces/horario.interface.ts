@@ -1,9 +1,11 @@
+// horario.interface.ts
 export interface HorarioAPI {
-  id: number;
-  ruta_id: number;
-  dia: string; // Ej: "Lunes"
-  hora_inicio: string; // Ej: "06:00:00"
-  hora_fin: string; // Ej: "14:00:00"
+  id: string;
+  nombre?: string;
+  hora_inicio?: string; // ej: "08:00"
+  hora_fin?: string;    // ej: "17:00"
+  ruta_id?: string;
   created_at?: string;
   updated_at?: string;
 }
+
