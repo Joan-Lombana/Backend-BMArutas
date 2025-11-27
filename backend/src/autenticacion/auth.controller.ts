@@ -28,7 +28,8 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    res.redirect('http://localhost:4200/principal');
+    res.redirect(`${process.env.FRONTEND_URL}/principal`);
+
   }
 
 
