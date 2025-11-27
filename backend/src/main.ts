@@ -10,7 +10,10 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  
+ if (process.env.NODE_ENV === 'production') {
+    app.setGlobalPrefix('api');
+  }
   app.enableCors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
