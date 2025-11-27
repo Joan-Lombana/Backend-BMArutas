@@ -37,13 +37,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: 📦 Empaquetar backend + rutas-service
+      - name: 📦 Empaquetar build
         run: |
           tar -czf deploy.tar.gz \
             backend/dist \
             backend/package.json \
             backend/package-lock.json \
-            backend/tsconfig.json \
             rutas-service/dist \
             rutas-service/package.json \
             rutas-service/package-lock.json
@@ -54,7 +53,7 @@ jobs:
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             'mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/'
 
-      - name: 🚚 Subir paquete al servidor
+      - name: 🚚 Subir build al servidor
         run: |
           scp -o StrictHostKeyChecking=no deploy.tar.gz \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
@@ -62,44 +61,15 @@ jobs:
       - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-            echo "⬇️ Exportando variables..."
-            export POSTGRES_USER="${{ secrets.POSTGRES_USER }}"
-            export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
-            export POSTGRES_DB="${{ secrets.POSTGRES_DB }}"
-            export DB_HOST="${{ secrets.DB_HOST }}"
-            export DB_PORT="${{ secrets.DB_PORT }}"
-            export ROUTES_SERVICE_URL="${{ secrets.ROUTES_SERVICE_URL }}"
-            export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
-            export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
-            export GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}"
-            export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-            export FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
-            export PORT="${{ secrets.PORT }}"
-
             ROOT=/var/www/joan_site/BMArutas-Backend
 
             echo "🧹 Limpiando deploy anterior..."
             rm -rf $ROOT
-            mkdir -p $ROOT
+            mkdir -p $ROOT/backend
+            mkdir -p $ROOT/rutas-service
 
             echo "📦 Extrayendo deploy.tar.gz..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
-
-            echo "📝 Creando .env en backend..."
-            ENV_FILE=$ROOT/.env
-            > $ENV_FILE
-            echo "POSTGRES_USER=$POSTGRES_USER" >> $ENV_FILE
-            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> $ENV_FILE
-            echo "POSTGRES_DB=$POSTGRES_DB" >> $ENV_FILE
-            echo "DB_HOST=$DB_HOST" >> $ENV_FILE
-            echo "DB_PORT=$DB_PORT" >> $ENV_FILE
-            echo "ROUTES_SERVICE_URL=$ROUTES_SERVICE_URL" >> $ENV_FILE
-            echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> $ENV_FILE
-            echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> $ENV_FILE
-            echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
-            echo "JWT_SECRET=$JWT_SECRET" >> $ENV_FILE
-            echo FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
-            echo PORT="${{ secrets.PORT }}"
 
             echo "📦 Instalando dependencias..."
             cd $ROOT/backend
@@ -113,13 +83,14 @@ jobs:
             pm2 delete rutas-service || true
 
             cd /var/www/joan_site/pm2
-            pm2 start ecosystem.config.js
+            pm2 start ecosystem.config.js --env production
             pm2 save
 
             pm2 status
 
             echo "✅ Deploy finalizado correctamente."
           '
+
 
 
 
