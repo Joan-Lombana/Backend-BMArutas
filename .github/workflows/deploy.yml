@@ -37,7 +37,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: 📦 Empaquetar build
+      - name: 📦 Empaquetar dist + package.json
         run: |
           tar -czf deploy.tar.gz \
             backend/dist \
@@ -50,28 +50,45 @@ jobs:
       - name: 🛠️ Preparar directorio remoto
         run: |
           ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            'mkdir -p /tmp/eco_backend/ && chmod 777 /tmp/eco_backend/'
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          'mkdir -p /tmp/eco_backend/'
 
-      - name: 🚚 Subir build al servidor
+      - name: 🚚 Subir paquete al servidor
         run: |
           scp -o StrictHostKeyChecking=no deploy.tar.gz \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
       - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
             ROOT=/var/www/joan_site/BMArutas-Backend
 
-            echo "🧹 Limpiando deploy anterior..."
+            echo "🧹 Limpiando y recreando directorio..."
             rm -rf $ROOT
-            mkdir -p $ROOT/backend
-            mkdir -p $ROOT/rutas-service
+            mkdir -p $ROOT
 
-            echo "📦 Extrayendo deploy.tar.gz..."
+            echo "📦 Extrayendo archivos..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📦 Instalando dependencias..."
+            echo "📝 Creando archivo .env..."
+            ENV_FILE=$ROOT/.env
+            > $ENV_FILE
+
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $ENV_FILE
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $ENV_FILE
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $ENV_FILE
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> $ENV_FILE
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> $ENV_FILE
+            echo "ROUTES_SERVICE_URL=${{ secrets.ROUTES_SERVICE_URL }}" >> $ENV_FILE
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $ENV_FILE
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> $ENV_FILE
+            echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> $ENV_FILE
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $ENV_FILE
+            echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> $ENV_FILE
+            echo "PORT=${{ secrets.PORT }}" >> $ENV_FILE
+
+            echo "📦 Instalando dependencias reales..."
+
             cd $ROOT/backend
             npm install --omit=dev
 
@@ -79,16 +96,15 @@ jobs:
             npm install --omit=dev
 
             echo "🔁 Reiniciando PM2..."
+            cd /var/www/joan_site/pm2
             pm2 delete backend || true
             pm2 delete rutas-service || true
-
-            cd /var/www/joan_site/pm2
-            pm2 start ecosystem.config.js --env production
+            pm2 start ecosystem.config.js
             pm2 save
 
+            echo "🔥 PM2 STATUS:"
             pm2 status
-
-            echo "✅ Deploy finalizado correctamente."
+            echo "🎉 Deploy finalizado correctamente."
           '
 
 
