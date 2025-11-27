@@ -98,6 +98,8 @@ jobs:
             echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> $ENV_FILE
             echo "GOOGLE_CALLBACK_URL=$GOOGLE_CALLBACK_URL" >> $ENV_FILE
             echo "JWT_SECRET=$JWT_SECRET" >> $ENV_FILE
+            echo FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
+            echo PORT="${{ secrets.PORT }}"
 
             echo "📦 Instalando dependencias..."
             cd $ROOT/backend
