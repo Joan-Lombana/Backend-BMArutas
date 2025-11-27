@@ -73,6 +73,8 @@ jobs:
             export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
             export GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}"
             export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            export FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
+            export PORT="${{ secrets.PORT }}"
 
             ROOT=/var/www/joan_site/BMArutas-Backend
 
