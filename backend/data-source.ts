@@ -6,7 +6,10 @@ import { Rol } from './src/autenticacion/rol/entities/rol.entity';
 import { Perfil } from './src/autenticacion/perfil/entities/perfil.entity';
 import * as dotenv from 'dotenv';
 
-dotenv.config();
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
+
 
 if (!process.env.DB_HOST || !process.env.DB_PORT || !process.env.POSTGRES_USER || !process.env.POSTGRES_PASSWORD || !process.env.POSTGRES_DB) {
   throw new Error('Faltan variables de entorno de la base de datos. Revisa tu archivo .env');
