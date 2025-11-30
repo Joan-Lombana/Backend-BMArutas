@@ -16,6 +16,7 @@ import { PerfilModule } from './perfil/perfil.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleStrategy } from './strategies/google.strategy';// o ./guards/google.strategy
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { GoogleStrategy } from './strategies/google.strategy';// o ./guards/goog
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AuthService, GoogleStrategy, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
