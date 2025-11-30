@@ -18,9 +18,8 @@ console.log('POSTGRES_PASSWORD:', process.env.POSTGRES_PASSWORD);
 console.log('POSTGRES_DB:', process.env.POSTGRES_DB);
   const app = await NestFactory.create(AppModule);
   
- if (process.env.NODE_ENV === 'production') {
-    app.setGlobalPrefix('api');
-  }
+  app.setGlobalPrefix('api');
+  
   app.enableCors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
