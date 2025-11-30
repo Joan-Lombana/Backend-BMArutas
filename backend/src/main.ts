@@ -1,6 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
 
+
+// Ruta absoluta al .env que está en el nivel superior
+dotenv.config({ path: '/var/www/joan_site/BMArutas-Backend/.env' });
 
 
 
@@ -12,7 +16,7 @@ console.log('DB_PORT:', process.env.DB_PORT);
 console.log('POSTGRES_USER:', process.env.POSTGRES_USER);
 console.log('POSTGRES_PASSWORD:', process.env.POSTGRES_PASSWORD);
 console.log('POSTGRES_DB:', process.env.POSTGRES_DB);
-  const app = await NestFactory.create(AppModule);
+const app = await NestFactory.create(AppModule);
   
   app.setGlobalPrefix('api');
   
