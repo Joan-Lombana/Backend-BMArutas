@@ -96,10 +96,12 @@ jobs:
             npm install --omit=dev
 
             echo "🔁 Reiniciando PM2..."
-            cd /var/www/joan_site/pm2
             pm2 delete backend || true
             pm2 delete rutas-service || true
-            pm2 start ecosystem.config.js
+
+            pm2 start $ROOT/backend/dist/src/main.js --name backend
+            pm2 start $ROOT/rutas-service/dist/main.js --name rutas-service
+
             pm2 save
 
             echo "🔥 PM2 STATUS:"
