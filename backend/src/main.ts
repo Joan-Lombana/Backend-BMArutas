@@ -3,8 +3,7 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 
 
-// Ruta absoluta al .env que está en el nivel superior
-dotenv.config({ path: '/var/www/joan_site/BMArutas-Backend/.env' });
+dotenv.config({ path: __dirname + '/../.env' });
 
 
 
