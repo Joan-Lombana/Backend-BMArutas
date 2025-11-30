@@ -70,32 +70,27 @@ jobs:
             echo "📦 Extrayendo archivos..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📝 Creando archivo .env..."
-            ENV_FILE=$ROOT/.env
-            > $ENV_FILE
-
-            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $ENV_FILE
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $ENV_FILE
-            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $ENV_FILE
-            echo "DB_HOST=${{ secrets.DB_HOST }}" >> $ENV_FILE
-            echo "DB_PORT=${{ secrets.DB_PORT }}" >> $ENV_FILE
-            echo "ROUTES_SERVICE_URL=${{ secrets.ROUTES_SERVICE_URL }}" >> $ENV_FILE
-            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> $ENV_FILE
-            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> $ENV_FILE
-            echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> $ENV_FILE
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> $ENV_FILE
-            echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> $ENV_FILE
-            echo "PORT=${{ secrets.PORT }}" >> $ENV_FILE
-
             echo "📦 Instalando dependencias reales..."
-
             cd $ROOT/backend
             npm install --omit=dev
-
             cd $ROOT/rutas-service
             npm install --omit=dev
 
-            echo "🔁 Reiniciando PM2..."
+            echo "🌐 Exportando variables de entorno..."
+            export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+            export DB_HOST=${{ secrets.DB_HOST }}
+            export DB_PORT=${{ secrets.DB_PORT }}
+            export ROUTES_SERVICE_URL=${{ secrets.ROUTES_SERVICE_URL }}
+            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            export GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
+            export JWT_SECRET=${{ secrets.JWT_SECRET }}
+            export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            export PORT=${{ secrets.PORT }}
+
+            echo "🔁 Reiniciando PM2 con variables exportadas..."
             pm2 delete backend || true
             pm2 delete rutas-service || true
 
@@ -103,11 +98,11 @@ jobs:
             pm2 start $ROOT/rutas-service/dist/main.js --name rutas-service
 
             pm2 save
-
             echo "🔥 PM2 STATUS:"
             pm2 status
             echo "🎉 Deploy finalizado correctamente."
           '
+
 
 
 
