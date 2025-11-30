@@ -15,10 +15,10 @@ import { OperativoModule } from './operativo/operativo.module';
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT ?? '5432', 10),
       username: process.env.POSTGRES_USER,
-      password: String(process.env.POSTGRES_PASSWORD), // 👈 fuerza a string
+      password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
     AuthModule,
     OperativoModule,
