@@ -7,8 +7,18 @@ export class OperativoService {
   private readonly baseUrl: string;
 
   constructor(private readonly http: HttpService) {
-    this.baseUrl = process.env.ROUTES_SERVICE_URL || 'http://rutas-service:3001';
+  const url = process.env.ROUTES_SERVICE_URL;
+
+  if (!url) {
+    throw new Error("❌ ERROR: La variable ROUTES_SERVICE_URL no está definida");
   }
+
+  // Quitar barra final si la ponen accidentalmente
+  this.baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+
+  console.log("🌐 ROUTES_SERVICE_URL cargada:", this.baseUrl);
+}
+
 
   private async get<T>(endpoint: string, params?: any): Promise<T> {
     try {
