@@ -11,8 +11,9 @@ export class OperativoController {
     return this.operativoService.obtenerVehiculosPorPerfil(perfil_id);
   }
 
-  @Post('vehiculos')
+  @Post('vehiculos/crear')
   crearVehiculo(@Body() body: any) {
+    console.log('📥 Body recibido en OperativoController:', body);
     return this.operativoService.crearVehiculo(body);
   }
 

@@ -8,9 +8,10 @@ import { PosicionAPI } from '../interfaces/posicion.interface';
 import { CalleAPI } from '../interfaces/calle.interface';
 import { HorarioAPI } from '../interfaces/horario.interface';
 
+
 @Injectable()
 export class ApilucioService {
-  private readonly baseUrl = 'http://apirecoleccion.gonzaloandreslucio.com/api';
+  private readonly baseUrl = 'https://apirecoleccion.gonzaloandreslucio.com/api';
 
   constructor(private readonly http: HttpService) {}
 

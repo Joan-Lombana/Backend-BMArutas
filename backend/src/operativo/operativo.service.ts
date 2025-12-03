@@ -10,23 +10,37 @@ export class OperativoService {
     this.baseUrl = process.env.ROUTES_SERVICE_URL || 'http://rutas-service:3001';
   }
 
-  private async get<T>(endpoint: string): Promise<T> {
+  private async get<T>(endpoint: string, params?: any): Promise<T> {
     try {
-      const { data } = await firstValueFrom(this.http.get<T>(`${this.baseUrl}${endpoint}`));
+      const { data } = await firstValueFrom(
+        this.http.get<T>(`${this.baseUrl}${endpoint}`, { params })
+      );
       return data;
     } catch (error: any) {
       throw new InternalServerErrorException(error.response?.data || error.message);
     }
   }
 
+  
+
   private async post<T>(endpoint: string, body: any): Promise<T> {
-    try {
-      const { data } = await firstValueFrom(this.http.post<T>(`${this.baseUrl}${endpoint}`, body));
-      return data;
-    } catch (error: any) {
-      throw new InternalServerErrorException(error.response?.data || error.message);
+      try {
+        // 👀 Aquí ves el body que sale al microservicio
+        console.log('➡️ POST hacia:', `${this.baseUrl}${endpoint}`);
+        console.log('📦 Body enviado:', body);
+
+        const { data } = await firstValueFrom(
+          this.http.post<T>(`${this.baseUrl}${endpoint}`, body)
+        );
+
+        console.log('✅ Respuesta POST:', data);
+        return data;
+      } catch (error: any) {
+        console.error('❌ Error POST:', error.response?.data || error.message);
+        throw new InternalServerErrorException(error.response?.data || error.message);
+      }
     }
-  }
+
 
   private async put<T>(endpoint: string, body: any): Promise<T> {
     try {
@@ -46,9 +60,12 @@ export class OperativoService {
     }
   }
 
-  // === VEHÍCULOS ===
+  // ====================================================
+  // ================   VEHÍCULOS   =====================
+  // ====================================================
+
   obtenerVehiculosPorPerfil(perfil_id: string) {
-    return this.get(`/vehiculos?perfil_id=${perfil_id}`);
+    return this.get('/vehiculos', { perfil_id });
   }
 
   crearVehiculo(body: any) {
@@ -67,14 +84,32 @@ export class OperativoService {
     return this.delete(`/vehiculos/${id}`);
   }
 
-  // === RUTAS ===
+  // ====================================================
+  // ====================   RUTAS   =====================
+  // ====================================================
+
   obtenerRutasPorPerfil(perfil_id: string) {
-    return this.post('/rutas', { perfil_id });
+    return this.get('/rutas', { perfil_id });
+  }
+  crearRuta(body: any) {
+
+    // 🔍 Normalizar el GeoJSON antes de enviarlo
+    const shape = body.shape;
+
+    const payload = {
+      nombre_ruta: body.nombre_ruta,
+      perfil_id: body.perfil_id,
+      shape: {
+        type: shape?.type || "LineString",
+        coordinates: Array.isArray(shape?.coordinates) ? shape.coordinates : []
+      }
+    };
+
+    console.log("📦 Payload final enviado a rutas-service:", payload);
+
+    return this.post('/rutas', payload);
   }
 
-  crearRuta(body: any) {
-    return this.post('/rutas', body);
-  }
 
   obtenerRutaPorId(id: string) {
     return this.get(`/rutas/${id}`);
@@ -88,9 +123,12 @@ export class OperativoService {
     return this.delete(`/rutas/${id}`);
   }
 
-  // === HORARIOS ===
+  // ====================================================
+  // ===================   HORARIOS   ===================
+  // ====================================================
+
   obtenerHorariosPorPerfil(perfil_id: string) {
-    return this.post('/horarios', { perfil_id });
+    return this.get('/horarios', { perfil_id });
   }
 
   crearHorario(body: any) {
@@ -109,9 +147,12 @@ export class OperativoService {
     return this.delete(`/horarios/${id}`);
   }
 
-  // === RECORRIDOS ===
+  // ====================================================
+  // ==================   RECORRIDOS   ==================
+  // ====================================================
+
   obtenerRecorridosPorPerfil(perfil_id: string) {
-    return this.post('/misrecorridos', { perfil_id });
+    return this.get('/misrecorridos', { perfil_id });
   }
 
   crearRecorrido(body: any) {
@@ -130,7 +171,10 @@ export class OperativoService {
     return this.delete(`/recorridos/${id}`);
   }
 
-  // === POSICIONES ===
+  // ====================================================
+  // ===================  POSICIONES  ===================
+  // ====================================================
+
   obtenerPosiciones(recorridoId: string) {
     return this.get(`/recorridos/${recorridoId}/posiciones`);
   }
@@ -151,13 +195,16 @@ export class OperativoService {
     return this.delete(`/recorridos/${recorridoId}/posiciones/${posicionId}`);
   }
 
-  // === CALLES ===
+  // ====================================================
+  // ====================   CALLES   =====================
+  // ====================================================
+
   obtenerCalles() {
-    return this.get(`/calles`);
+    return this.get('/calles');
   }
 
   crearCalle(body: any) {
-    return this.post(`/calles`, body);
+    return this.post('/calles', body);
   }
 
   obtenerCallePorId(id: string) {
@@ -172,4 +219,5 @@ export class OperativoService {
     return this.delete(`/calles/${id}`);
   }
 }
+
 
