@@ -1,6 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser'; // 👈 NO uses * as cookieParser
+
+
+
 
 
 async function bootstrap() {
