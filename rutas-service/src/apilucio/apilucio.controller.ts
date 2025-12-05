@@ -1,7 +1,9 @@
 import { 
   Controller, 
   Get, 
-  Post, 
+  Post,
+  Put,
+  Delete, 
   Body, 
   Param, 
   Query, 
@@ -41,6 +43,25 @@ export class ApilucioController {
   async crearVehiculo(@Body() body: CrearVehiculoDto) {
     return this.apilucioService.crearVehiculo(body);
   }
+  
+  @Put('vehiculos/:id')
+async actualizarVehiculo(
+  @Param('id') id: string,
+  @Body() body: Partial<VehiculoAPI>,@Query('perfil_id') perfil_id: string
+): Promise<VehiculoAPI> {
+  if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
+  console.log(`✏️ PUT /vehiculos/${id} recibido con body:`, body, 'perfil_id:', perfil_id);
+  return this.apilucioService.actualizarVehiculo(id, body, perfil_id);
+}
+
+@Delete('vehiculos/:id')
+async eliminarVehiculo(
+  @Param('id') id: string,@Query('perfil_id') perfil_id: string
+): Promise<{ message: string }> {
+  if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
+  console.log(`🗑️ DELETE /vehiculos/${id} recibido con perfil_id:`, perfil_id);
+  return this.apilucioService.eliminarVehiculo(id, perfil_id);
+}
 
   // ================= RUTAS =================
   @Get('rutas')

@@ -23,14 +23,22 @@ export class OperativoController {
   }
 
   @Put('vehiculos/:id')
-  actualizarVehiculo(@Param('id') id: string, @Body() body: any) {
-    return this.operativoService.actualizarVehiculo(id, body);
+  actualizarVehiculo(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Query('perfil_id') perfil_id: string
+  ) {
+    return this.operativoService.actualizarVehiculo(id, body, perfil_id);
   }
 
   @Delete('vehiculos/:id')
-  eliminarVehiculo(@Param('id') id: string) {
-    return this.operativoService.eliminarVehiculo(id);
+  eliminarVehiculo(
+    @Param('id') id: string,
+    @Query('perfil_id') perfil_id: string
+  ) {
+    return this.operativoService.eliminarVehiculo(id, perfil_id);
   }
+
 
   // === RUTAS ===
   @Get('rutas')

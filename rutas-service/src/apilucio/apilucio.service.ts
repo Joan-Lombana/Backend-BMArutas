@@ -32,6 +32,51 @@ export class ApilucioService {
     );
     return res.data;
   }
+   
+  async eliminarVehiculo(id: string, perfil_id: string): Promise<{ message: string }> {
+  try {
+    console.log('🗑️ Eliminando vehículo id:', id, 'perfil_id:', perfil_id);
+
+    const res = await lastValueFrom(
+      this.http.delete(`${this.baseUrl}/vehiculos/${id}`, { 
+        params: { perfil_id } 
+      })
+    );
+
+    console.log('✅ Vehículo eliminado:', res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error('❌ Error eliminando vehículo:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+
+
+ async actualizarVehiculo(
+  id: string,
+  datos: Partial<VehiculoAPI>,
+  perfil_id: string
+): Promise<VehiculoAPI> {
+  try {
+    console.log('✏️ Actualizando vehículo id:', id, 'perfil_id:', perfil_id, 'datos:', datos);
+
+    const res = await lastValueFrom(
+      this.http.put(`${this.baseUrl}/vehiculos/${id}`, datos, { 
+        params: { perfil_id } 
+      })
+    );
+
+    console.log('✅ Vehículo actualizado:', res.data);
+    return res.data;
+  } catch (error: any) {
+    console.error('❌ Error actualizando vehículo:', error.response?.data || error.message);
+    throw error;
+  }
+  }
+
+
+ 
 
   // ================= RUTAS =================
   async listarRutas(): Promise<RutaAPI[]> {

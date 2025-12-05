@@ -19,7 +19,6 @@ export class OperativoService {
   console.log("🌐 ROUTES_SERVICE_URL cargada:", this.baseUrl);
 }
 
-
   private async get<T>(endpoint: string, params?: any): Promise<T> {
     try {
       const { data } = await firstValueFrom(
@@ -50,25 +49,27 @@ export class OperativoService {
         throw new InternalServerErrorException(error.response?.data || error.message);
       }
     }
-
-
-  private async put<T>(endpoint: string, body: any): Promise<T> {
+    
+  private async put<T>(endpoint: string, body: any, options?: any): Promise<T> {
     try {
-      const { data } = await firstValueFrom(this.http.put<T>(`${this.baseUrl}${endpoint}`, body));
+      const { data } = await firstValueFrom(this.http.put<T>(`${this.baseUrl}${endpoint}`, body, options));
       return data;
     } catch (error: any) {
       throw new InternalServerErrorException(error.response?.data || error.message);
     }
   }
 
-  private async delete<T>(endpoint: string): Promise<T> {
+  private async delete<T>(endpoint: string, options?: any): Promise<T> {
     try {
-      const { data } = await firstValueFrom(this.http.delete<T>(`${this.baseUrl}${endpoint}`));
+      const { data } = await firstValueFrom(this.http.delete<T>(`${this.baseUrl}${endpoint}`, options));
       return data;
     } catch (error: any) {
       throw new InternalServerErrorException(error.response?.data || error.message);
     }
   }
+
+
+  
 
   // ====================================================
   // ================   VEHÍCULOS   =====================
@@ -86,13 +87,16 @@ export class OperativoService {
     return this.get(`/vehiculos/${id}`);
   }
 
-  actualizarVehiculo(id: string, body: any) {
-    return this.put(`/vehiculos/${id}`, body);
-  }
+  actualizarVehiculo(id: string, body: any, perfil_id: string) {
+  return this.put(`/vehiculos/${id}`, body, { params: { perfil_id } });
+}
 
-  eliminarVehiculo(id: string) {
-    return this.delete(`/vehiculos/${id}`);
-  }
+eliminarVehiculo(id: string, perfil_id: string) {
+  return this.delete(`/vehiculos/${id}`, { params: { perfil_id } });
+}
+
+
+
 
   // ====================================================
   // ====================   RUTAS   =====================
