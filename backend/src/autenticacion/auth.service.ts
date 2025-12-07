@@ -55,11 +55,18 @@ export class AuthService {
     if (!usuario.perfil || !usuario.perfil.rol) {
       throw new Error('El usuario no tiene un perfil o rol asignado');
     }
+    console.log("➡ usuario cargado desde DB:", usuario);
+    console.log("➡ nombre:", usuario.nombre);
+    console.log("➡ apellido:", usuario.apellido);
 
     const payload = {
       sub: usuario.id,
       correo: usuario.correo,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      foto: usuario.foto,
       rol: usuario.perfil.rol.tipo,
+
     };
 
     const token = this.jwtService.sign(payload);

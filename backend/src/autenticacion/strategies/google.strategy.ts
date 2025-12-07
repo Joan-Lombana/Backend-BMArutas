@@ -44,6 +44,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       foto: photos[0].value,
       accessToken,
     };
+
+    console.log('USUARIO CONSTRUIDO:', user);  // 👀 Log final
+
     done(null, user);
   }
 }

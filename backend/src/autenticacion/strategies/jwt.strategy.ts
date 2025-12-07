@@ -6,15 +6,20 @@ import { Strategy, ExtractJwt } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (req) => req?.cookies?.access_token,
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.JWT_SECRET || 'secretKey',
+
     });
   }
 
   async validate(payload: any) {
-    // Devuelve información del usuario para los guards
-    return { userId: payload.sub, correo: payload.correo, rol: payload.rol };
+    return {
+      userId: payload.sub,
+      correo: payload.correo,
+      nombre: payload.nombre,
+      apellido: payload.apellido,
+      foto: payload.foto,
+      rol: payload.rol,
+    };
   }
 }

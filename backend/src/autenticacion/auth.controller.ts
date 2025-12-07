@@ -20,17 +20,12 @@ export class AuthController {
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
   async googleRedirect(@Req() req: Request, @Res() res: Response) {
-    const { access_token } = await this.authService.loginWithGoogle(req.user);
+    const { access_token, usuario } = await this.authService.loginWithGoogle(req.user);
 
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-
-    res.redirect(`${process.env.FRONTEND_URL}/principal`);
-
+    // Enviar token en el body, no en cookie
+    res.redirect(`${process.env.FRONTEND_URL}/auth-callback?token=${access_token}`);
   }
+
 
 
   // Endpoint protegido (lector del usuario autenticado)
@@ -42,9 +37,8 @@ export class AuthController {
 
   // Logout
   @Post('logout')
-  logout(@Res() res: Response) {
-    res.clearCookie('access_token');
-    return res.send({ msg: 'Logout exitoso' });
+  logout() {
+    return { msg: 'Logout exitoso' };
   }
 }
 

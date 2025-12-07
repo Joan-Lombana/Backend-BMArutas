@@ -1,9 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser'; // 👈 NO uses * as cookieParser
-
-
-
 
 
 async function bootstrap() {
@@ -17,12 +13,9 @@ console.log('POSTGRES_DB:', process.env.POSTGRES_DB);
 const app = await NestFactory.create(AppModule);
   
   app.setGlobalPrefix('api');
-  app.use(cookieParser());
   app.enableCors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Authorization',
   });
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
