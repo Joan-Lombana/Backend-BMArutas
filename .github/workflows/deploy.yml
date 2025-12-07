@@ -76,6 +76,14 @@ jobs:
             cd $ROOT/rutas-service
             npm install --omit=dev
 
+            echo "🔁 Reiniciando PM2 ..."
+
+            pm2 delete backend || true
+            pm2 delete rutas-service || true
+
+            echo "🧹 Eliminando dump viejo..."
+            rm ~/.pm2/dump.pm2 || true
+
             echo "🌐 Exportando variables de entorno..."
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
@@ -90,16 +98,11 @@ jobs:
             export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             export PORT=${{ secrets.PORT }}
 
-            echo "🔁 Reiniciando PM2 con variables exportadas..."
-
-            pm2 delete backend || true
-            pm2 delete rutas-service || true
-
             # Iniciar BACKEND en modo PRODUCCIÓN
             NODE_ENV=production pm2 start $ROOT/backend/dist/src/main.js --name backend
             # Iniciar rutas-service también en PRODUCCIÓN
             NODE_ENV=production pm2 start $ROOT/rutas-service/dist/main.js --name rutas-service
-            
+
             pm2 save
             echo "🔥 PM2 STATUS:"
             pm2 status
