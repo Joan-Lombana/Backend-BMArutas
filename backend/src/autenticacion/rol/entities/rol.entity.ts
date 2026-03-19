@@ -5,6 +5,7 @@ import { Perfil } from '../../perfil/entities/perfil.entity';
 export enum TipoRol {
   ADMIN = 'admin',
   USUARIO = 'usuario',
+  CONDUCTOR = 'conductor',
 }
 
 @Entity('roles')

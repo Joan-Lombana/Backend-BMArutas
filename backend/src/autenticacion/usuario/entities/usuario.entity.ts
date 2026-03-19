@@ -4,34 +4,35 @@ import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
 
 @Entity('usuarios')
 export class Usuario {
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  primerNombre: string;
 
-  @Column({ length: 100 })
-  nombre: string;
+  @Column({ nullable: true })
+  segundoNombre?: string; // ✅ opcional
 
-  @Column({ length: 100, nullable: true })
-  apellido: string;
+  @Column()
+  primerApellido: string;
+
+  @Column()
+  segundoApellido: string;
 
   @Column({ unique: true })
   correo: string;
 
-  @Column({ nullable: true })
-  contrasena: string;
-
+  @Column({ select: false })
+  password: string;
 
   @Column({ length: 15, nullable: true })
-  numero_celular: string;
-
-  @Column({ nullable: true })
-  foto: string;
+  numero_celular?: string; // ✅ opcional
 
   @Column({ default: true })
   activo: boolean;
 
   @OneToOne(() => Perfil, perfil => perfil.usuario)
-  @JoinColumn()
   perfil: Perfil;
 }
 

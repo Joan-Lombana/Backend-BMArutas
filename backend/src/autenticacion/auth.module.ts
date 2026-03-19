@@ -15,8 +15,8 @@ import { PerfilModule } from './perfil/perfil.module';
 // Controladores y servicios
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { GoogleStrategy } from './strategies/google.strategy';// o ./guards/google.strategy
 import { JwtStrategy } from './strategies/jwt.strategy';
+
 
 @Module({
   imports: [
@@ -30,7 +30,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, JwtStrategy],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -3,28 +3,33 @@ import { Rol, TipoRol } from '../entities/rol.entity';
 
 async function seedRoles() {
   console.log('🚀 Seeder iniciado...');
+
   try {
     await AppDataSource.initialize();
     console.log('🔌 Conexión establecida');
 
     const repo = AppDataSource.getRepository(Rol);
-    const count = await repo.count();
-    console.log(`📊 Roles existentes: ${count}`);
-
-    if (count > 0) {
-      console.log('ℹ️ Seeder omitido: ya hay roles.');
-      return;
-    }
 
     const roles = [
-      repo.create({ tipo: TipoRol.ADMIN, descripcion: 'Super usuario con acceso completo' }),
-      repo.create({ tipo: TipoRol.USUARIO, descripcion: 'Usuario regular' }),
+      { tipo: TipoRol.ADMIN, descripcion: 'Super usuario con acceso completo' },
+      { tipo: TipoRol.USUARIO, descripcion: 'Usuario regular' },
+      { tipo: TipoRol.CONDUCTOR, descripcion: 'Usuario con rol de conductor' },
     ];
 
-    console.log('📦 Objetos creados:', roles);
+    for (const r of roles) {
+      const existe = await repo.findOne({
+        where: { tipo: r.tipo },
+      });
 
-    const result = await repo.save(roles);
-    console.log('✅ Resultado de save():', result);
+      if (!existe) {
+        const nuevo = repo.create(r);
+        await repo.save(nuevo);
+        console.log('✅ Rol creado:', r.tipo);
+      } else {
+        console.log('⚠ Ya existe:', r.tipo);
+      }
+    }
+
   } catch (error) {
     console.error('❌ Error en el seeder:', error);
   } finally {
