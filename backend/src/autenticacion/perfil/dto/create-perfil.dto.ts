@@ -1,5 +1,6 @@
 export class CreatePerfilDto {
+  usuarioId: string;
+  rolId?: string;
   estado?: string;
   personalizacion?: Record<string, any>;
-  rolId: number; // 👈 ID del rol que se asignará
 }

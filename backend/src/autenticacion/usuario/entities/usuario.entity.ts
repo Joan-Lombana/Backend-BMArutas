@@ -1,10 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
 import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
-
 
 @Entity('usuarios')
 export class Usuario {
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -12,7 +10,7 @@ export class Usuario {
   primerNombre: string;
 
   @Column({ nullable: true })
-  segundoNombre?: string; // ✅ opcional
+  segundoNombre?: string;
 
   @Column()
   primerApellido: string;
@@ -27,12 +25,13 @@ export class Usuario {
   password: string;
 
   @Column({ length: 15, nullable: true })
-  numero_celular?: string; // ✅ opcional
+  numero_celular?: string;
 
   @Column({ default: true })
   activo: boolean;
 
-  @OneToOne(() => Perfil, perfil => perfil.usuario)
+  // 🔹 Perfil del usuario, carga automática (eager)
+  @OneToOne(() => Perfil, perfil => perfil.usuario, { eager: true })
   perfil: Perfil;
 }
 

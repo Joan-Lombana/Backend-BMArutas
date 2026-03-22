@@ -12,7 +12,6 @@ async function seedRoles() {
 
     const roles = [
       { tipo: TipoRol.ADMIN, descripcion: 'Super usuario con acceso completo' },
-      { tipo: TipoRol.USUARIO, descripcion: 'Usuario regular' },
       { tipo: TipoRol.CONDUCTOR, descripcion: 'Usuario con rol de conductor' },
     ];
 

@@ -1,13 +1,15 @@
+// usuario.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Usuario } from './entities/usuario.entity';
 import { UsuarioService } from './usuario.service';
 import { UsuarioController } from './usuario.controller';
+import { Usuario } from './entities/usuario.entity';
+import { Perfil } from '../perfil/entities/perfil.entity';
+import { Rol } from '../rol/entities/rol.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Usuario])],  // 👈 OBLIGATORIO
+  imports: [TypeOrmModule.forFeature([Usuario, Perfil, Rol])],
   controllers: [UsuarioController],
   providers: [UsuarioService],
-  exports: [UsuarioService], // opcional pero recomendado
 })
 export class UsuarioModule {}
