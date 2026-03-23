@@ -20,9 +20,12 @@ export class Perfil {
   @Column({ type: 'jsonb', nullable: true })
   personalizacion: Record<string, any>;
 
-  @OneToOne(() => Usuario, (usuario) => usuario.perfil, { onDelete: 'CASCADE', nullable: true })
+  @OneToOne(() => Usuario, (usuario) => usuario.perfil, {
+  onDelete: 'CASCADE',
+  nullable: false,
+})
   @JoinColumn({ name: 'usuario_id' })
-  usuario?: Usuario;
+  usuario: Usuario;
 
   @ManyToOne(() => Rol, (rol) => rol.perfiles, {
     nullable: true, // 👈 IMPORTANTE

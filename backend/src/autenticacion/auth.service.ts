@@ -50,6 +50,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
+
     if (!usuario.password) {
       console.log('❌ usuario sin password');
       throw new UnauthorizedException('Usuario sin contraseña');
@@ -72,6 +73,14 @@ export class AuthService {
       console.log('❌ no tiene rol');
       throw new UnauthorizedException('Usuario sin rol');
     }
+  
+     // ✅ SOLO ADMIN PUEDE LOGUEARSE
+  if (usuario.perfil.rol.tipo !== 'admin') {
+    throw new UnauthorizedException(
+      'Solo administradores pueden acceder a la aplicación web',
+    );
+  }
+
 
     const payload = {
       sub: usuario.id,

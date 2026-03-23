@@ -170,7 +170,15 @@ eliminarVehiculo(id: string, perfil_id: string) {
   }
 
   crearRecorrido(body: any) {
-    return this.post('/recorridos', body);
+
+    const payload = {
+      ...body,
+      estado: 'asignado'
+    };
+
+    console.log("📦 Payload enviado a /recorridos:", payload);
+
+    return this.post('/recorridos/crear', payload);
   }
 
   obtenerRecorridoPorId(id: string) {

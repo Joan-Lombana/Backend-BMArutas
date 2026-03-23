@@ -86,7 +86,7 @@ async eliminarVehiculo(
     return this.apilucioService.listarRecorridos();
   }
 
-  @Post('recorridos/iniciar')
+  @Post('recorridos/crear')
   async iniciarRecorrido(@Body() body: CrearRecorridoDto) {
     return this.apilucioService.iniciarRecorrido(body);
   }

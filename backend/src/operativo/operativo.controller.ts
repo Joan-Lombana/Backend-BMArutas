@@ -1,5 +1,8 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
+import { UseGuards } from '@nestjs/common';
+import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
+import { Roles } from 'src/autenticacion/decoradores/roles.decorador';
 
 @Controller('operativo')
 export class OperativoController {
@@ -98,7 +101,9 @@ export class OperativoController {
     return this.operativoService.obtenerRecorridosPorPerfil(perfil_id);
   }
 
-  @Post('recorridos')
+  @Post('recorridos/crear')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN') // Solo usuarios con rol ADMIN pueden crear recorridos
   crearRecorrido(@Body() body: any) {
     return this.operativoService.crearRecorrido(body);
   }
