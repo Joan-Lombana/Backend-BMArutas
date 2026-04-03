@@ -10,11 +10,11 @@ export interface RecorridoAPI {
   id: string;
   ruta_id: string;
   vehiculo_id: string;
-  perfil_id: string;
-  estado?: EstadoRecorrido;
+  id_conductor: string; // 👈 TU sistema
+  perfil_id: string;    // 👈 API externa
+  estado: EstadoRecorrido;
   fecha_inicio?: string;
   fecha_fin?: string;
-  created_at?: string;
-  updated_at?: string;
+
 }
 

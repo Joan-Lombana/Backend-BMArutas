@@ -33,22 +33,28 @@ export class OperativoService {
   
 
   private async post<T>(endpoint: string, body: any): Promise<T> {
-      try {
-        // 👀 Aquí ves el body que sale al microservicio
-        console.log('➡️ POST hacia:', `${this.baseUrl}${endpoint}`);
-        console.log('📦 Body enviado:', body);
+  try {
+    const url = `${this.baseUrl}${endpoint}`;
 
-        const { data } = await firstValueFrom(
-          this.http.post<T>(`${this.baseUrl}${endpoint}`, body)
-        );
+    console.log('🌐 BASE URL:', this.baseUrl);
+    console.log('📍 ENDPOINT:', endpoint);
+    console.log('🔗 URL FINAL:', url);
+    console.log('📦 BODY:', body);
 
-        console.log('✅ Respuesta POST:', data);
-        return data;
-      } catch (error: any) {
-        console.error('❌ Error POST:', error.response?.data || error.message);
-        throw new InternalServerErrorException(error.response?.data || error.message);
-      }
-    }
+    const { data } = await firstValueFrom(
+      this.http.post<T>(url, body)
+    );
+
+    console.log('✅ Respuesta POST:', data);
+
+    return data;
+  } catch (error: any) {
+    console.error('❌ Error POST:', error.response?.data || error.message);
+    throw new InternalServerErrorException(
+      error.response?.data || error.message
+    );
+  }
+  }
     
   private async put<T>(endpoint: string, body: any, options?: any): Promise<T> {
     try {
@@ -171,14 +177,21 @@ eliminarVehiculo(id: string, perfil_id: string) {
 
   crearRecorrido(body: any) {
 
+    const perfil_id_api = process.env.PERFIL_API;
+
     const payload = {
-      ...body,
+      ruta_id: body.ruta_id,
+      vehiculo_id: body.vehiculo_id,
+      perfil_id: perfil_id_api,
       estado: 'asignado'
     };
 
-    console.log("📦 Payload enviado a /recorridos:", payload);
+    console.log("📦 Payload enviado a API:", payload);
 
+    // 👉 AQUÍ envías a apilucio
     return this.post('/recorridos/crear', payload);
+    
+
   }
 
   obtenerRecorridoPorId(id: string) {

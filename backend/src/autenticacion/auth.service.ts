@@ -34,6 +34,8 @@ export class AuthService {
     console.log('LOGIN INTENTO');
     console.log('correo:', correo);
 
+    
+
     // Traer usuario + perfil + rol
     const usuario = await this.usuariosRepo
       .createQueryBuilder('usuario')
@@ -74,12 +76,7 @@ export class AuthService {
       throw new UnauthorizedException('Usuario sin rol');
     }
   
-     // ✅ SOLO ADMIN PUEDE LOGUEARSE
-  if (usuario.perfil.rol.tipo !== 'admin') {
-    throw new UnauthorizedException(
-      'Solo administradores pueden acceder a la aplicación web',
-    );
-  }
+  
 
 
     const payload = {
@@ -95,7 +92,11 @@ export class AuthService {
 
     return {
       access_token: token,
-      usuario,
+      usuario: {
+        id: usuario.id,
+        correo: usuario.correo,
+        rol: usuario.perfil.rol.tipo,
+      },
     };
   }
 

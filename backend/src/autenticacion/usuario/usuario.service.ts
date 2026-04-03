@@ -32,7 +32,7 @@ export class UsuarioService {
         'Solo se pueden crear usuarios con rol conductor',
       );
     }
-
+    
     // Verificar que no exista correo duplicado
     const exist = await this.usuariosRepo.findOne({ where: { correo: dto.correo } });
     if (exist) {
