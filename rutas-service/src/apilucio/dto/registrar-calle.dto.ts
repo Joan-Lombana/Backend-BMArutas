@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class RegistrarCalleDto {
   @IsString()
-  nombre: string;
+  nombre?: string;
 
   @IsOptional()
   @IsNumber()

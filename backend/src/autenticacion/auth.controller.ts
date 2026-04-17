@@ -31,9 +31,8 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req) {
-    console.log('Token payload:', req.user); // req.user ya tiene sub, correo, rol
     const usuario = await this.authService.validateUser(req.user.sub);
-    return usuario;
+    return this.authService['mapUsuario'](usuario); // 🔥 o hazlo público
   }
 }
 

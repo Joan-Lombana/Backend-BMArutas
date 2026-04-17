@@ -27,6 +27,25 @@ export class AuthService {
   ) {}
 
   // ==========================
+  // 🔥 MAPPER USUARIO (CLAVE)
+  // ==========================
+  private mapUsuario(usuario: Usuario) {
+    return {
+      id: usuario.id,
+      correo: usuario.correo,
+      rol: usuario.perfil?.rol?.tipo,
+
+      // 🔥 datos de nombre
+      primerNombre: usuario.primerNombre,
+      segundoNombre: usuario.segundoNombre,
+      primerApellido: usuario.primerApellido,
+      segundoApellido: usuario.segundoApellido,
+
+      nombreCompleto: `${usuario.primerNombre ?? ''} ${usuario.primerApellido ?? ''}`.trim(),
+    };
+  }
+
+  // ==========================
   // LOGIN LOCAL
   // ==========================
   async loginLocal(correo: string, password: string) {
@@ -34,9 +53,6 @@ export class AuthService {
     console.log('LOGIN INTENTO');
     console.log('correo:', correo);
 
-    
-
-    // Traer usuario + perfil + rol
     const usuario = await this.usuariosRepo
       .createQueryBuilder('usuario')
       .leftJoinAndSelect('usuario.perfil', 'perfil')
@@ -49,9 +65,8 @@ export class AuthService {
 
     if (!usuario) {
       console.log('❌ usuario no existe');
-      throw new UnauthorizedException('Credenciales incorrectas');
+      throw new UnauthorizedException('Usuario no registrado en el sistema');
     }
-
 
     if (!usuario.password) {
       console.log('❌ usuario sin password');
@@ -75,10 +90,8 @@ export class AuthService {
       console.log('❌ no tiene rol');
       throw new UnauthorizedException('Usuario sin rol');
     }
-  
-  
 
-
+    // 🔐 JWT SOLO DATOS MÍNIMOS
     const payload = {
       sub: usuario.id,
       correo: usuario.correo,
@@ -92,23 +105,25 @@ export class AuthService {
 
     return {
       access_token: token,
-      usuario: {
-        id: usuario.id,
-        correo: usuario.correo,
-        rol: usuario.perfil.rol.tipo,
-      },
+      usuario: this.mapUsuario(usuario), // 🔥 CLAVE
     };
   }
 
   // ==========================
-  // VALIDAR TOKEN
+  // VALIDAR TOKEN (DB REAL)
   // ==========================
   async validateUser(id: string) {
     const usuario = await this.usuariosRepo.findOne({
       where: { id },
       relations: ['perfil', 'perfil.rol'],
     });
+
     console.log('Validando usuario desde DB:', usuario);
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no válido');
+    }
+
     return usuario;
   }
 }

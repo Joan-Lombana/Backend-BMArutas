@@ -7,10 +7,10 @@ export class RegistrarHorarioDto {
   nombre?: string;
 
   @IsString()
-  hora_inicio: string; // formato "HH:mm"
+  hora_inicio?: string; // formato "HH:mm"
 
   @IsString()
-  hora_fin: string;
+  hora_fin?: string;
 
   @IsOptional()
   @IsString()

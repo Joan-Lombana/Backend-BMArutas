@@ -3,36 +3,38 @@ import { Perfil } from 'src/autenticacion/perfil/entities/perfil.entity';
 
 @Entity('usuarios')
 export class Usuario {
+
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  primerNombre: string;
+  primerNombre!: string;
 
   @Column({ nullable: true })
   segundoNombre?: string;
 
   @Column()
-  primerApellido: string;
+  primerApellido!: string;
 
   @Column()
-  segundoApellido: string;
+  segundoApellido!: string;
 
   @Column({ unique: true })
-  correo: string;
+  correo!: string;
 
   @Column({ select: false })
-  password: string;
+  password!: string;
 
   @Column({ length: 15, nullable: true })
   numero_celular?: string;
 
   @Column({ default: true })
-  activo: boolean;
+  activo!: boolean;
 
-  // 🔹 Perfil del usuario, carga automática (eager)
+  // 🔹 Perfil del usuario
   @OneToOne(() => Perfil, perfil => perfil.usuario, { eager: true })
-  perfil: Perfil;
+  perfil!: Perfil;
+
 }
 
 

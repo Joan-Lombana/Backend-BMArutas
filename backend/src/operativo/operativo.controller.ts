@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
@@ -11,8 +11,8 @@ export class OperativoController {
 
   // === VEHÍCULOS ===
   @Get('vehiculos')
-  obtenerVehiculos(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerVehiculosPorPerfil(perfil_id);
+  obtenerVehiculos() {
+    return this.operativoService.obtenerVehiculos();
   }
 
   @Post('vehiculos/crear')
@@ -29,25 +29,20 @@ export class OperativoController {
   @Put('vehiculos/:id')
   actualizarVehiculo(
     @Param('id') id: string,
-    @Body() body: any,
-    @Query('perfil_id') perfil_id: string
+    @Body() body: any
   ) {
-    return this.operativoService.actualizarVehiculo(id, body, perfil_id);
+    return this.operativoService.actualizarVehiculo(id, body);
   }
 
   @Delete('vehiculos/:id')
-  eliminarVehiculo(
-    @Param('id') id: string,
-    @Query('perfil_id') perfil_id: string
-  ) {
-    return this.operativoService.eliminarVehiculo(id, perfil_id);
+  eliminarVehiculo(@Param('id') id: string) {
+    return this.operativoService.eliminarVehiculo(id);
   }
-
 
   // === RUTAS ===
   @Get('rutas')
-  obtenerRutas(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerRutasPorPerfil(perfil_id);
+  obtenerRutas() {
+    return this.operativoService.obtenerRutas();
   }
 
   @Post('rutas')
@@ -72,8 +67,8 @@ export class OperativoController {
 
   // === HORARIOS ===
   @Get('horarios')
-  obtenerHorarios(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerHorariosPorPerfil(perfil_id);
+  obtenerHorarios() {
+    return this.operativoService.obtenerHorarios();
   }
 
   @Post('horarios')
@@ -97,17 +92,11 @@ export class OperativoController {
   }
 
   // === RECORRIDOS ===
-  @Get('recorridos')
-  obtenerRecorridos(@Query('perfil_id') perfil_id: string) {
-    return this.operativoService.obtenerRecorridosPorPerfil(perfil_id);
+  @Get('recorridos/listar')
+  obtenerRecorridos() {
+    return this.operativoService.obtenerRecorridos();
   }
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin') // Solo usuarios con rol ADMIN pueden crear recorridos
-  @Post('recorridos/crear')
-  crearRecorrido(@Body() body: any) {
-    return this.operativoService.crearRecorrido(body);
-  }
 
   @Get('recorridos/:id')
   obtenerRecorridoPorId(@Param('id') id: string) {
@@ -136,18 +125,35 @@ export class OperativoController {
   }
 
   @Get('recorridos/:id/posiciones/:posicionId')
-  obtenerPosicionPorId(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string) {
+  obtenerPosicionPorId(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string
+  ) {
     return this.operativoService.obtenerPosicionPorId(recorridoId, posicionId);
   }
 
   @Put('recorridos/:id/posiciones/:posicionId')
-  actualizarPosicion(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string, @Body() body: any) {
-    return this.operativoService.actualizarPosicion(recorridoId, posicionId, body);
+  actualizarPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string,
+    @Body() body: any
+  ) {
+    return this.operativoService.actualizarPosicion(
+      recorridoId,
+      posicionId,
+      body
+    );
   }
 
   @Delete('recorridos/:id/posiciones/:posicionId')
-  eliminarPosicion(@Param('id') recorridoId: string, @Param('posicionId') posicionId: string) {
-    return this.operativoService.eliminarPosicion(recorridoId, posicionId);
+  eliminarPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string
+  ) {
+    return this.operativoService.eliminarPosicion(
+      recorridoId,
+      posicionId
+    );
   }
 
   // === CALLES ===

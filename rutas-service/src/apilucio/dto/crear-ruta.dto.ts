@@ -3,10 +3,7 @@ import { IsString, IsOptional, IsArray } from 'class-validator';
 
 export class CrearRutaDto {
   @IsString()
-  nombre_ruta: string;
-
-  @IsString()
-  perfil_id: string;
+  nombre_ruta!: string;
 
   @IsOptional()
   shape?: any; // aquí puedes definir un DTO más específico si lo necesitas

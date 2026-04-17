@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { Usuario } from './src/autenticacion/usuario/entities/usuario.entity';
 import { Rol } from './src/autenticacion/rol/entities/rol.entity';
 import { Perfil } from './src/autenticacion/perfil/entities/perfil.entity';
+import { Recorrido } from 'src/operativo/recorrido/entities/recorrido.entity';
 import * as dotenv from 'dotenv';
 
 if (process.env.NODE_ENV !== 'production') {
@@ -25,7 +26,7 @@ export const AppDataSource = new DataSource({
   database: process.env.POSTGRES_DB,
   synchronize: process.env.NODE_ENV !== 'production',
   logging: true,
-  entities: [Usuario, Rol, Perfil],
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: ['src/migrations/*.ts'],
   ssl: process.env.DB_SSL === 'true',
 });

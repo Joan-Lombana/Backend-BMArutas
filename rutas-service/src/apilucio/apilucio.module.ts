@@ -3,8 +3,9 @@ import { HttpModule } from '@nestjs/axios';
 import { ApilucioController } from './apilucio.controller';
 import { ApilucioService } from './apilucio.service';
 
+
 @Module({
-  imports: [HttpModule],
+  imports: [HttpModule, ],
   controllers: [ApilucioController],
   providers: [ApilucioService],
   exports: [ApilucioService],

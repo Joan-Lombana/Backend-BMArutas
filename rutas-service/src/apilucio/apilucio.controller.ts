@@ -22,7 +22,7 @@ import { HorarioAPI } from '../interfaces/horario.interface';
 // ====== DTOs (validación de entradas) ======
 import { CrearVehiculoDto } from './dto/crear-vehiculo.dto';
 import { CrearRutaDto } from './dto/crear-ruta.dto';
-import { CrearRecorridoDto } from './dto/crear-recorrido.dto';
+import { CrearRecorridoApiDto } from './dto/crear-recorrido.dto';
 import { CrearPosicionDto } from './dto/crear-posicion.dto';
 
 
@@ -32,74 +32,54 @@ export class ApilucioController {
 
   // ================= VEHÍCULOS =================
   @Get('vehiculos')
-  async obtenerVehiculosPorPerfil(
-    @Query('perfil_id') perfil_id: string
-  ): Promise<VehiculoAPI[]> {
-    if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
-    return this.apilucioService.obtenerVehiculosPorPerfil(perfil_id);
+  obtenerVehiculos(): Promise<VehiculoAPI[]> {
+    return this.apilucioService.obtenerVehiculos();
   }
 
   @Post('vehiculos')
-  async crearVehiculo(@Body() body: CrearVehiculoDto) {
+  crearVehiculo(@Body() body: CrearVehiculoDto) {
     return this.apilucioService.crearVehiculo(body);
   }
-  
-  @Put('vehiculos/:id')
-async actualizarVehiculo(
-  @Param('id') id: string,
-  @Body() body: Partial<VehiculoAPI>,@Query('perfil_id') perfil_id: string
-): Promise<VehiculoAPI> {
-  if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
-  console.log(`✏️ PUT /vehiculos/${id} recibido con body:`, body, 'perfil_id:', perfil_id);
-  return this.apilucioService.actualizarVehiculo(id, body, perfil_id);
-}
 
-@Delete('vehiculos/:id')
-async eliminarVehiculo(
-  @Param('id') id: string,@Query('perfil_id') perfil_id: string
-): Promise<{ message: string }> {
-  if (!perfil_id) throw new BadRequestException('Debe enviarse perfil_id');
-  console.log(`🗑️ DELETE /vehiculos/${id} recibido con perfil_id:`, perfil_id);
-  return this.apilucioService.eliminarVehiculo(id, perfil_id);
-}
+  @Put('vehiculos/:id')
+  actualizarVehiculo(
+    @Param('id') id: string,
+    @Body() body: Partial<VehiculoAPI>
+  ): Promise<VehiculoAPI> {
+    return this.apilucioService.actualizarVehiculo(id, body);
+  }
+
+  @Delete('vehiculos/:id')
+  eliminarVehiculo(@Param('id') id: string) {
+    return this.apilucioService.eliminarVehiculo(id);
+  }
 
   // ================= RUTAS =================
   @Get('rutas')
-  async obtenerRutasPorPerfil(
-    @Query('perfil_id') perfil_id: string
-  ): Promise<RutaAPI[]> {
-    if (perfil_id) return this.apilucioService.obtenerRutasPorPerfil(perfil_id);
-    return this.apilucioService.listarRutas();
+  obtenerRutas(): Promise<RutaAPI[]> {
+    return this.apilucioService.obtenerRutas();
   }
 
   @Post('rutas')
-  async crearRuta(@Body() body: CrearRutaDto) {
+  crearRuta(@Body() body: CrearRutaDto) {
     return this.apilucioService.crearRuta(body);
   }
 
   // ================= RECORRIDOS =================
-  @Get('recorridos')
-  async obtenerRecorridosPorPerfil(
-    @Query('perfil_id') perfil_id: string
-  ): Promise<RecorridoAPI[]> {
-    if (perfil_id) return this.apilucioService.obtenerRecorridosPorPerfil(perfil_id);
-    return this.apilucioService.listarRecorridos();
+  @Get('misrecorridos')
+  obtenerRecorridos(): Promise<RecorridoAPI[]> {
+    return this.apilucioService.obtenerRecorridos();
   }
 
-  @Post('recorridos/crear')
-  async iniciarRecorrido(@Body() body: CrearRecorridoDto) {
+  @Post('recorridos/iniciar')
+  iniciarRecorrido(@Body() body: CrearRecorridoApiDto) {
     return this.apilucioService.iniciarRecorrido(body);
   }
 
   // ================= POSICIONES =================
-  @Get('posiciones')
-  async listarTodasLasPosiciones(): Promise<PosicionAPI[]> {
-    return this.apilucioService.listarPosiciones();
-  }
-
   @Post('recorridos/:id/posiciones')
-  async registrarPosicion(
-    @Param('id') recorridoId: string, 
+  registrarPosicion(
+    @Param('id') recorridoId: string,
     @Body() body: CrearPosicionDto
   ) {
     return this.apilucioService.registrarPosicion(recorridoId, body);
@@ -107,24 +87,15 @@ async eliminarVehiculo(
 
   // ================= CALLES =================
   @Get('calles')
-  async obtenerCallesPorPerfil(
-    @Query('perfil_id') perfil_id: string
-  ): Promise<CalleAPI[]> {
-    if (perfil_id) return this.apilucioService.obtenerCallesPorPerfil(perfil_id);
-    return this.apilucioService.listarCalles();
+  obtenerCalles(): Promise<CalleAPI[]> {
+    return this.apilucioService.obtenerCalles();
   }
-
-  
 
   // ================= HORARIOS =================
   @Get('horarios')
-  async obtenerHorariosPorPerfil(
-    @Query('perfil_id') perfil_id: string
-  ): Promise<HorarioAPI[]> {
-    if (perfil_id) return this.apilucioService.obtenerHorariosPorPerfil(perfil_id);
-    return this.apilucioService.listarHorarios();
+  obtenerHorarios(): Promise<HorarioAPI[]> {
+    return this.apilucioService.obtenerHorarios();
   }
-  
 }
 
 
