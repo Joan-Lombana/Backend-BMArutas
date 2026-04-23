@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   Patch,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { RecorridoService } from './recorrido.service';
@@ -26,7 +27,10 @@ export class RecorridoController {
     return this.recorridoService.crear(dto);
   }
 
-  
+  @Get('/local')
+  obtenerRecorridos() {
+    return this.recorridoService.obtenerTodos();
+  }
 
   // 🔍 Obtener uno
   @Get(':id')
@@ -50,5 +54,11 @@ export class RecorridoController {
   @Patch(':id/finalizar')
   finalizar(@Param('id') id: string) {
     return this.recorridoService.finalizar(id);
+  }
+
+  // 🗑️ Eliminar
+  @Delete(':id')
+  eliminar(@Param('id') id: string) {
+    return this.recorridoService.eliminar(id);
   }
 }

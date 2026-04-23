@@ -144,7 +144,7 @@ export class OperativoService {
     return this.get('/misrecorridos');
   }
 
-  crearRecorrido(body: any) {
+  iniciarRecorrido(body: any) {
     // ⚠️ SOLO lo que la API externa permite
     const payload = {
       ruta_id: body.ruta_id,

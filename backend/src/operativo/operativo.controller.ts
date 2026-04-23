@@ -92,23 +92,23 @@ export class OperativoController {
   }
 
   // === RECORRIDOS ===
-  @Get('recorridos/listar')
+  @Get('recorridos/externo')
   obtenerRecorridos() {
     return this.operativoService.obtenerRecorridos();
   }
 
 
-  @Get('recorridos/:id')
+  @Get('recorridos/externo/:id')
   obtenerRecorridoPorId(@Param('id') id: string) {
     return this.operativoService.obtenerRecorridoPorId(id);
   }
 
-  @Put('recorridos/:id')
+  @Put('recorridos/externo/:id')
   actualizarRecorrido(@Param('id') id: string, @Body() body: any) {
     return this.operativoService.actualizarRecorrido(id, body);
   }
 
-  @Delete('recorridos/:id')
+  @Delete('recorridos/externo/:id')
   eliminarRecorrido(@Param('id') id: string) {
     return this.operativoService.eliminarRecorrido(id);
   }

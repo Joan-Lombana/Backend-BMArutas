@@ -14,16 +14,7 @@ export class RecorridoService {
   ) {}
 
     async crear(dto: CreateRecorridoDto) {
-    /*
-      try {
-      const apiResponse = await this.operativoService.crearRecorrido({
-        ruta_id: dto.ruta_id,
-        vehiculo_id: dto.vehiculo_id,
-      });
-    } catch (e) {
-      console.error('ERROR microservicio operativo:', e);
-      throw new Error('Error llamando servicio operativo');
-    }*/
+   
 
     const recorrido = this.recorridoRepo.create({
       ruta_id: dto.ruta_id,
@@ -50,10 +41,36 @@ export class RecorridoService {
   }
 
   async iniciar(id: string) {
-    const recorrido = await this.obtenerPorId(id);
-    recorrido.estado = EstadoRecorrido.ACTIVA;
-    return this.recorridoRepo.save(recorrido);
+  const recorrido = await this.obtenerPorId(id);
+
+  // 🚫 Evitar iniciar dos veces
+  if (recorrido.estado === EstadoRecorrido.ACTIVA) {
+    throw new Error('El recorrido ya está activo');
   }
+
+  try {
+    // 🔥 LLAMADA A LA API EXTERNA
+    const apiResponse = await this.operativoService.iniciarRecorrido({
+      ruta_id: recorrido.ruta_id,
+      vehiculo_id: recorrido.vehiculo_id,
+    });
+
+    console.log('🌐 Respuesta API externa:', apiResponse);
+
+    // 🧠 OPCIONAL (MUY IMPORTANTE)
+    // guarda el id externo si existe
+    // recorrido.api_recorrido_id = apiResponse.id;
+
+  } catch (error) {
+    console.error('❌ Error llamando API externa:', error);
+    throw new Error('No se pudo iniciar el recorrido en la API externa');
+  }
+
+  // ✅ Actualizas estado local
+  recorrido.estado = EstadoRecorrido.ACTIVA;
+
+  return this.recorridoRepo.save(recorrido);
+}
 
   async pausar(id: string) {
     const recorrido = await this.obtenerPorId(id);
@@ -65,5 +82,10 @@ export class RecorridoService {
     const recorrido = await this.obtenerPorId(id);
     recorrido.estado = EstadoRecorrido.FINALIZADO;
     return this.recorridoRepo.save(recorrido);
+  }
+
+  async eliminar(id: string) {
+    const recorrido = await this.obtenerPorId(id);
+    return this.recorridoRepo.remove(recorrido);
   }
 }
