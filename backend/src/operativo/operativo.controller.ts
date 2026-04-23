@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Patch, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
@@ -106,6 +106,11 @@ export class OperativoController {
   @Put('recorridos/externo/:id')
   actualizarRecorrido(@Param('id') id: string, @Body() body: any) {
     return this.operativoService.actualizarRecorrido(id, body);
+  }
+
+  @Patch('externo/:apiId/finalizar')
+  finalizarRecorridoExterno(@Param('apiId') apiId: string) {
+    return this.operativoService.finalizarRecorridoExterno(apiId);
   }
 
   @Delete('recorridos/externo/:id')

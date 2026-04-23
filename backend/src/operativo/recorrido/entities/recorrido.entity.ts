@@ -29,4 +29,7 @@ export class Recorrido {
     default: EstadoRecorrido.NO_PROGRAMADA,
   })
   estado!: EstadoRecorrido;
+
+  @Column({ nullable: true })
+  api_recorrido_id?: string;
 }

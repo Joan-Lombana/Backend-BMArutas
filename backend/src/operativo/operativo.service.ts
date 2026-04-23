@@ -2,6 +2,11 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 
+interface RecorridoApiResponse {
+  id: string;
+  [key: string]: any;
+}
+
 @Injectable()
 export class OperativoService {
   private readonly baseUrl: string;
@@ -144,7 +149,7 @@ export class OperativoService {
     return this.get('/misrecorridos');
   }
 
-  iniciarRecorrido(body: any) {
+  iniciarRecorrido(body: any): Promise<RecorridoApiResponse> {
     // ⚠️ SOLO lo que la API externa permite
     const payload = {
       ruta_id: body.ruta_id,
@@ -153,8 +158,21 @@ export class OperativoService {
 
     console.log("📡 Enviando a microservicio:", payload);
 
-    return this.post('/recorridos/iniciar', payload);
+    return this.post<RecorridoApiResponse>('/recorridos/iniciar', payload);
   }
+  finalizarRecorrido(recorridoId: string): Promise<RecorridoApiResponse> {
+    console.log("📡 Finalizando recorrido:", recorridoId);
+    return this.post<RecorridoApiResponse>(`/recorridos/${recorridoId}/finalizar`, {});
+  }
+
+  finalizarRecorridoExterno(apiRecorridoId: string) {
+  console.log("🌐 Finalizando SOLO en microservicio:", apiRecorridoId);
+
+  return this.post(
+    `/recorridos/${apiRecorridoId}/finalizar`,
+    {}
+  );
+  } 
 
   obtenerRecorridoPorId(id: string) {
     return this.get(`/recorridos/${id}`);

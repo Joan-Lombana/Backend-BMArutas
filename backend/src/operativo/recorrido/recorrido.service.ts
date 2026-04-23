@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException} from '@nestjs/common';
 import { OperativoService } from '../operativo.service';
 import { CreateRecorridoDto } from './dto/create-recorrido.dto';
 import { Recorrido, EstadoRecorrido } from './entities/recorrido.entity';
@@ -42,33 +42,27 @@ export class RecorridoService {
 
   async iniciar(id: string) {
   const recorrido = await this.obtenerPorId(id);
-
   // 🚫 Evitar iniciar dos veces
   if (recorrido.estado === EstadoRecorrido.ACTIVA) {
     throw new Error('El recorrido ya está activo');
   }
-
   try {
     // 🔥 LLAMADA A LA API EXTERNA
     const apiResponse = await this.operativoService.iniciarRecorrido({
       ruta_id: recorrido.ruta_id,
       vehiculo_id: recorrido.vehiculo_id,
     });
-
     console.log('🌐 Respuesta API externa:', apiResponse);
-
-    // 🧠 OPCIONAL (MUY IMPORTANTE)
-    // guarda el id externo si existe
-    // recorrido.api_recorrido_id = apiResponse.id;
-
+    // 🧠 guarda el id externo si existe
+    if (apiResponse?.id) {
+      recorrido.api_recorrido_id = apiResponse.id;
+    }
   } catch (error) {
     console.error('❌ Error llamando API externa:', error);
     throw new Error('No se pudo iniciar el recorrido en la API externa');
   }
-
   // ✅ Actualizas estado local
   recorrido.estado = EstadoRecorrido.ACTIVA;
-
   return this.recorridoRepo.save(recorrido);
 }
 
@@ -79,13 +73,42 @@ export class RecorridoService {
   }
 
   async finalizar(id: string) {
-    const recorrido = await this.obtenerPorId(id);
-    recorrido.estado = EstadoRecorrido.FINALIZADO;
-    return this.recorridoRepo.save(recorrido);
+  const recorrido = await this.obtenerPorId(id);
+
+  // 🚨 Validación clave
+  if (!recorrido.api_recorrido_id) {
+    throw new Error('Este recorrido no está sincronizado con la API externa');
   }
 
-  async eliminar(id: string) {
-    const recorrido = await this.obtenerPorId(id);
-    return this.recorridoRepo.remove(recorrido);
+  try {
+    // 🔥 LLAMADA A LA API EXTERNA
+    const apiResponse = await this.operativoService.finalizarRecorrido(
+      recorrido.api_recorrido_id
+    );
+
+    console.log('🌐 Finalizado en API externa:', apiResponse);
+
+  } catch (error) {
+    console.error('❌ Error finalizando en API externa:', error);
+    throw new Error('No se pudo finalizar el recorrido en la API externa');
   }
+
+  // ✅ Actualizas estado local SOLO si todo salió bien
+  recorrido.estado = EstadoRecorrido.FINALIZADO;
+
+  return this.recorridoRepo.save(recorrido);
+}
+
+  async eliminar(id: string) {
+  const recorrido = await this.obtenerPorId(id);
+
+  // 🚨 Validación de negocio
+  if (recorrido.estado !== EstadoRecorrido.PROGRAMADA) {
+  throw new BadRequestException(
+    'Solo se pueden eliminar recorridos en estado PROGRAMADA'
+  );
+ }
+
+  return this.recorridoRepo.remove(recorrido);
+}
 }

@@ -112,6 +112,19 @@ export class ApilucioService {
     return res.data;
   }
 
+  async finalizarRecorrido(recorridoId: string): Promise<any> {
+  const res = await lastValueFrom(
+    this.http.post(
+      `${this.baseUrl}/recorridos/${recorridoId}/finalizar`,
+      {
+        perfil_id: this.perfilId,
+      }
+    ),
+  );
+
+  return res.data;
+}
+
   // ================= POSICIONES =================
 
   async registrarPosicion(recorridoId: string, body: any): Promise<any> {

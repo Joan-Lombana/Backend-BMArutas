@@ -76,6 +76,11 @@ export class ApilucioController {
     return this.apilucioService.iniciarRecorrido(body);
   }
 
+  @Post('recorridos/:id/finalizar')
+  finalizarRecorrido(@Param('id') recorridoId: string) {
+    return this.apilucioService.finalizarRecorrido(recorridoId);
+  }
+
   // ================= POSICIONES =================
   @Post('recorridos/:id/posiciones')
   registrarPosicion(
