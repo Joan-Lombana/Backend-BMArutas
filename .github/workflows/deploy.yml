@@ -16,7 +16,7 @@ jobs:
       - name: ⚙️ Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.2.0'
 
       - name: 🏗️ Construir backend y rutas-service
         run: |
@@ -91,11 +91,9 @@ jobs:
             export DB_HOST=${{ secrets.DB_HOST }}
             export DB_PORT=${{ secrets.DB_PORT }}
             export ROUTES_SERVICE_URL=${{ secrets.ROUTES_SERVICE_URL }}
-            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            export GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
             export JWT_SECRET=${{ secrets.JWT_SECRET }}
             export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            export PERFIL_API=${{ secrets.PERFIL_API }}
             export PORT=${{ secrets.PORT }}
 
             # Iniciar BACKEND en modo PRODUCCIÓN
