@@ -61,7 +61,7 @@ jobs:
       - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-            ROOT=/BMArutas-Backend
+            ROOT=/home/joan/BMArutas-Backend
 
             echo "🧹 Limpiando y recreando directorio..."
             rm -rf $ROOT
