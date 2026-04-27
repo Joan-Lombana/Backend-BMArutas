@@ -61,7 +61,7 @@ jobs:
       - name: ⚡ Desplegar en el servidor
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-            ROOT=/var/www/joan_site/BMArutas-Backend
+            ROOT=/var/www/BMArutas-Backend
 
             echo "🧹 Limpiando y recreando directorio..."
             rm -rf $ROOT
@@ -106,7 +106,7 @@ jobs:
             pm2 status
 
             echo "🎉 Deploy finalizado correctamente."
-            
+
 
           '
 
