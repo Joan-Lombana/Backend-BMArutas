@@ -106,6 +106,7 @@ jobs:
             pm2 status
 
             echo "🎉 Deploy finalizado correctamente."
+            
 
           '
 
