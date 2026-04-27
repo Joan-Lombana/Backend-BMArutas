@@ -10,14 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # -------------------------------
+      # 1️⃣ Checkout
+      # -------------------------------
       - name: 🧩 Checkout del código
         uses: actions/checkout@v4
 
+      # -------------------------------
+      # 2️⃣ Node
+      # -------------------------------
       - name: ⚙️ Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22.2.0'
 
+      # -------------------------------
+      # 3️⃣ Build backend
+      # -------------------------------
       - name: 🏗️ Construir backend y rutas-service
         run: |
           echo "🏗️ Construyendo backend..."
@@ -32,12 +41,18 @@ jobs:
           npm run build
           cd ..
 
+      # -------------------------------
+      # 4️⃣ SSH
+      # -------------------------------
       - name: 🔑 Configurar SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - name: 📦 Empaquetar dist + package.json
+      # -------------------------------
+      # 5️⃣ Empaquetar
+      # -------------------------------
+      - name: 📦 Empaquetar proyecto
         run: |
           tar -czf deploy.tar.gz \
             backend/dist \
@@ -47,66 +62,53 @@ jobs:
             rutas-service/package.json \
             rutas-service/package-lock.json
 
-      - name: 🛠️ Preparar directorio remoto
+      # -------------------------------
+      # 6️⃣ Subir a servidor
+      # -------------------------------
+      - name: 🚚 Subir paquete
         run: |
           ssh -o StrictHostKeyChecking=no \
           ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
           'mkdir -p /tmp/eco_backend/'
 
-      - name: 🚚 Subir paquete al servidor
-        run: |
           scp -o StrictHostKeyChecking=no deploy.tar.gz \
           ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
-      - name: ⚡ Desplegar en el servidor
+      # -------------------------------
+      # 7️⃣ Deploy real
+      # -------------------------------
+      - name: ⚡ Desplegar en servidor
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+          ssh -o StrictHostKeyChecking=no \
+          ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
+          
             ROOT=/home/joan/BMArutas-Backend
 
-            echo "🧹 Limpiando y recreando directorio..."
+            echo "🧹 Limpiando proyecto..."
             rm -rf $ROOT
             mkdir -p $ROOT
 
-            echo "📦 Extrayendo archivos..."
+            echo "📦 Extrayendo..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📦 Instalando dependencias reales..."
+            echo "📦 Instalando dependencias..."
             cd $ROOT/backend
             npm install --omit=dev
+
             cd $ROOT/rutas-service
             npm install --omit=dev
 
-            echo "🔁 Reiniciando PM2 ..."
+            echo "🔁 Reiniciando PM2 con ecosystem..."
 
-            pm2 delete backend || true
-            pm2 delete rutas-service || true
-
-            echo "🧹 Eliminando dump viejo..."
-            rm ~/.pm2/dump.pm2 || true
-
-            echo "🌐 Exportando variables de entorno..."
-            export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            export DB_HOST=${{ secrets.DB_HOST }}
-            export DB_PORT=${{ secrets.DB_PORT }}
-            export ROUTES_SERVICE_URL=${{ secrets.ROUTES_SERVICE_URL }}
-            export JWT_SECRET=${{ secrets.JWT_SECRET }}
-            export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            export PERFIL_API=${{ secrets.PERFIL_API }}
-            export PORT=${{ secrets.PORT }}
-
-            # Iniciar BACKEND en modo PRODUCCIÓN
-            NODE_ENV=production pm2 start $ROOT/backend/dist/src/main.js --name backend
-            # Iniciar rutas-service también en PRODUCCIÓN
-            NODE_ENV=production pm2 start $ROOT/rutas-service/dist/main.js --name rutas-service
-
+            cd $ROOT
+            pm2 delete all || true
+            pm2 start ecosystem.config.js
             pm2 save
-            echo "🔥 PM2 STATUS:"
+
+            echo "🔥 STATUS PM2:"
             pm2 status
 
-            echo "🎉 Deploy finalizado correctamente."
-
+            echo "🎉 Deploy terminado"
           '
 
 
