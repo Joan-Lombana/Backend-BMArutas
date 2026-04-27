@@ -85,7 +85,8 @@ jobs:
             ROOT=/home/joan/BMArutas-Backend
 
             echo "🧹 Limpiando proyecto..."
-            rm -rf $ROOT
+            rm -rf $ROOT/backend
+            rm -rf $ROOT/rutas-service
             mkdir -p $ROOT
 
             echo "📦 Extrayendo..."
