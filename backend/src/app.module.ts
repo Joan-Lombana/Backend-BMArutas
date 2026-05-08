@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './autenticacion/auth.module';
 import { OperativoModule } from './operativo/operativo.module';
 import { RecorridoModule } from './operativo/recorrido/recorrido.module';
+import { PosicionModule } from './operativo/posicion/posicion.module';
 
 
 @Module({
@@ -22,7 +23,7 @@ import { RecorridoModule } from './operativo/recorrido/recorrido.module';
       synchronize: false,
     }),
     AuthModule,
-    OperativoModule, RecorridoModule
+    OperativoModule, RecorridoModule, PosicionModule
   ],
   controllers: [AppController],
   providers: [AppService],

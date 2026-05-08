@@ -90,6 +90,36 @@ export class ApilucioController {
     return this.apilucioService.registrarPosicion(recorridoId, body);
   }
 
+  @Get('recorridos/:id/posiciones')
+  obtenerPosiciones(@Param('id') recorridoId: string) {
+    return this.apilucioService.obtenerPosiciones(recorridoId);
+  }
+
+  @Get('recorridos/:id/posiciones/:posicionId')
+  obtenerPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string,
+  ) {
+    return this.apilucioService.obtenerPosicion(recorridoId, posicionId);
+  }
+
+  @Put('recorridos/:id/posiciones/:posicionId')
+  actualizarPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string,
+    @Body() body: Partial<PosicionAPI>,
+  ) {
+    return this.apilucioService.actualizarPosicion(recorridoId, posicionId, body);
+  }
+
+  @Delete('recorridos/:id/posiciones/:posicionId')
+  eliminarPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string,
+  ) {
+    return this.apilucioService.eliminarPosicion(recorridoId, posicionId);
+  }
+
   // ================= CALLES =================
   @Get('calles')
   obtenerCalles(): Promise<CalleAPI[]> {

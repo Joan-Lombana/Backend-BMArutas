@@ -128,8 +128,73 @@ export class ApilucioService {
   // ================= POSICIONES =================
 
   async registrarPosicion(recorridoId: string, body: any): Promise<any> {
+  const payload = {
+    lat: body.lat ?? body.latitud,
+    lon: body.lon ?? body.longitud,
+    perfil_id: this.perfilId,
+  };
+
+  const res = await lastValueFrom(
+    this.http.post(
+      `${this.baseUrl}/recorridos/${recorridoId}/posiciones`,
+      payload,
+    ),
+  );
+
+  return res.data;
+}
+
+  async obtenerPosiciones(recorridoId: string): Promise<PosicionAPI[]> {
     const res = await lastValueFrom(
-      this.http.post(`${this.baseUrl}/recorridos/${recorridoId}/posiciones`, body),
+      this.http.get(`${this.baseUrl}/recorridos/${recorridoId}/posiciones`, {
+        params: { perfil_id: this.perfilId },
+      }),
+    );
+    return res.data;
+  }
+
+  async obtenerPosicion(
+    recorridoId: string,
+    posicionId: string,
+  ): Promise<PosicionAPI> {
+    const res = await lastValueFrom(
+      this.http.get(
+        `${this.baseUrl}/recorridos/${recorridoId}/posiciones/${posicionId}`,
+        {
+          params: { perfil_id: this.perfilId },
+        },
+      ),
+    );
+    return res.data;
+  }
+
+  async actualizarPosicion(
+    recorridoId: string,
+    posicionId: string,
+    body: any,
+  ): Promise<PosicionAPI> {
+    const payload = {
+      ...body,
+      perfil_id: this.perfilId,
+    };
+
+    const res = await lastValueFrom(
+      this.http.put(
+        `${this.baseUrl}/recorridos/${recorridoId}/posiciones/${posicionId}`,
+        payload,
+      ),
+    );
+    return res.data;
+  }
+
+  async eliminarPosicion(recorridoId: string, posicionId: string): Promise<any> {
+    const res = await lastValueFrom(
+      this.http.delete(
+        `${this.baseUrl}/recorridos/${recorridoId}/posiciones/${posicionId}`,
+        {
+          params: { perfil_id: this.perfilId },
+        },
+      ),
     );
     return res.data;
   }

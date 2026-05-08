@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Recorrido } from './entities/recorrido.entity';
@@ -10,7 +10,7 @@ import { RecorridoController } from './recorrido.controller';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Recorrido]),
-    OperativoModule, // 👈 para usar OperativoService
+    forwardRef(() => OperativoModule), // 👈 para usar OperativoService
   ],
   controllers: [RecorridoController],
   providers: [RecorridoService],

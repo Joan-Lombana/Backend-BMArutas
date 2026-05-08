@@ -41,10 +41,10 @@ export const AppDataSource = new DataSource({
   logging: true,
 
   // 👇 compatible con ts-node y build
-  entities: [path.join(__dirname, '/**/*.entity{.ts,.js}')],
+  entities: [path.join(__dirname, 'src/**/*.entity{.ts,.js}')],
 
   // 👇 ruta correcta para migraciones
-  migrations: [path.join(__dirname, '/src/migrations/*{.ts,.js}')],
+  migrations: [path.join(__dirname, 'migrations/*{.ts,.js}')],
 
   ssl: process.env.DB_SSL === 'true',
 });

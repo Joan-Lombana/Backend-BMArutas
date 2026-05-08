@@ -1,9 +1,6 @@
 import { Controller, Patch, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
-import { UseGuards } from '@nestjs/common';
-import { RolesGuard } from 'src/autenticacion/guards/roles.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/autenticacion/decoradores/roles.decorador';
+
 
 @Controller('operativo')
 export class OperativoController {
@@ -134,7 +131,7 @@ export class OperativoController {
     @Param('id') recorridoId: string,
     @Param('posicionId') posicionId: string
   ) {
-    return this.operativoService.obtenerPosicionPorId(recorridoId, posicionId);
+    return this.operativoService.obtenerPosiciones(recorridoId);
   }
 
   @Put('recorridos/:id/posiciones/:posicionId')

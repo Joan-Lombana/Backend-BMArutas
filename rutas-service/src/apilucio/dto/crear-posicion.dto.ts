@@ -2,17 +2,19 @@
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CrearPosicionDto {
+  @IsOptional()
   @IsString()
-  recorrido_id: string;
+  recorrido_id?: string;
 
   @IsNumber()
-  lat: number;
+  lat?: number;
 
   @IsNumber()
-  lon: number;
+  lon?: number;
 
+  @IsOptional()
   @IsString()
-  perfil_id: string;
+  perfil_id?: string;
 
   @IsOptional()
   @IsString()

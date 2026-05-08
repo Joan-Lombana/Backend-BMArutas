@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany
+} from 'typeorm';
+
+import { Posicion } from 'src/operativo/posicion/entities/posicion.entity';
 
 export enum EstadoRecorrido {
   NO_PROGRAMADA = 'No programada',
@@ -9,8 +18,9 @@ export enum EstadoRecorrido {
   CANCELADO = 'Cancelado',
 }
 
-@Entity()
+@Entity('recorridos')
 export class Recorrido {
+
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
@@ -30,6 +40,32 @@ export class Recorrido {
   })
   estado!: EstadoRecorrido;
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true
+  })
   api_recorrido_id?: string;
+
+  @Column({
+    nullable: true,
+    type: 'timestamp'
+  })
+  fecha_inicio?: Date;
+
+  @Column({
+    nullable: true,
+    type: 'timestamp'
+  })
+  fecha_fin?: Date;
+
+  @OneToMany(
+    () => Posicion,
+    posicion => posicion.recorrido
+  )
+  posiciones!: Posicion[];
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

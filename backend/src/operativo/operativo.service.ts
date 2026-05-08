@@ -1,6 +1,11 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
+import { Repository } from 'typeorm';
 import { firstValueFrom } from 'rxjs';
+import { PosicionService } from './posicion/posicion.service';
+import { OperativoGateway, PosicionTiempoReal } from './operativo.gateway';
+import { Recorrido } from './recorrido/entities/recorrido.entity';
 
 interface RecorridoApiResponse {
   id: string;
@@ -11,16 +16,27 @@ interface RecorridoApiResponse {
 export class OperativoService {
   private readonly baseUrl: string;
 
-  constructor(private readonly http: HttpService) {
+  constructor(
+    private readonly http: HttpService,
+    private readonly posicionService: PosicionService,
+    private readonly operativoGateway: OperativoGateway,
+    @InjectRepository(Recorrido)
+    private readonly recorridoRepo: Repository<Recorrido>,
+  ) {
     const url = process.env.ROUTES_SERVICE_URL;
 
     if (!url) {
       throw new Error("❌ ERROR: ROUTES_SERVICE_URL no está definida");
     }
 
-    this.baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+    let baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+    if (!baseUrl.endsWith('/apilucio')) {
+      baseUrl += '/apilucio';
+    }
 
-    console.log("🌐 ROUTES_SERVICE_URL:", this.baseUrl);
+    this.baseUrl = baseUrl;
+
+    console.log('🌐 ROUTES_SERVICE_URL:', this.baseUrl);
   }
 
   // ================= HELPERS =================
@@ -186,27 +202,140 @@ export class OperativoService {
     return this.delete(`/recorridos/${id}`);
   }
 
+  // ================= UTILIDAD =================
+
+  private async obtenerApiRecorridoId(recorridoId: string): Promise<string | null> {
+    const recorrido = await this.recorridoRepo.findOne({
+      where: { id: recorridoId },
+    });
+
+    return recorrido?.api_recorrido_id ?? null;
+  }
+
   // ================= POSICIONES =================
 
-  obtenerPosiciones(recorridoId: string) {
-    return this.get(`/recorridos/${recorridoId}/posiciones`);
+  async crearPosicion(recorridoId: string, body: any) {
+  // 1. Validar recorrido local
+  const recorrido = await this.recorridoRepo.findOne({
+    where: { id: recorridoId },
+  });
+
+  if (!recorrido) {
+    throw new NotFoundException('Recorrido local no existe');
   }
 
-  crearPosicion(recorridoId: string, body: any) {
-    return this.post(`/recorridos/${recorridoId}/posiciones`, body);
+  // 2. Guardar local SIEMPRE
+  const posicion = await this.posicionService.create({
+    recorridoId: recorrido.id,
+    latitud: body.latitud ?? body.lat,
+    longitud: body.longitud ?? body.lon,
+    timestamp: body.timestamp ?? Date.now(),
+    velocidad: body.velocidad,
+  });
+
+  // 3. Emitir WebSocket
+  this.operativoGateway.emitirPosicionCreada(recorridoId, {
+    id: posicion.id,
+    recorridoId: posicion.recorridoId,
+    latitud: posicion.latitud,
+    longitud: posicion.longitud,
+    timestamp: posicion.timestamp,
+    velocidad: posicion.velocidad,
+    createdAt: posicion.createdAt,
+  });
+
+  // 4. Sincronizar con microservicio (SI EXISTE)
+  if (recorrido.api_recorrido_id) {
+    try {
+      await this.post(
+        `/recorridos/${recorrido.api_recorrido_id}/posiciones`,
+        {
+          lat: posicion.latitud,
+          lon: posicion.longitud,
+          perfil_id: body.perfil_id ?? null,
+        },
+      );
+    } catch (error: any) {
+      console.error('❌ Error API externa:', error.message);
+    }
+  }
+    return posicion;
   }
 
-  obtenerPosicionPorId(recorridoId: string, posicionId: string) {
-    return this.get(`/recorridos/${recorridoId}/posiciones/${posicionId}`);
+  async obtenerPosiciones(recorridoId: string) {
+    return this.posicionService.obtenerPosicionesPorRecorrido(recorridoId);
   }
 
-  actualizarPosicion(recorridoId: string, posicionId: string, body: any) {
-    return this.put(`/recorridos/${recorridoId}/posiciones/${posicionId}`, body);
+  async actualizarPosicion(recorridoId: string, posicionId: string, body: any) {
+    const updatedLocal = await this.posicionService.update(posicionId, {
+      latitud: body.latitud ?? body.lat,
+      longitud: body.longitud ?? body.lon,
+      timestamp: body.timestamp,
+      velocidad: body.velocidad,
+    });
+
+    try {
+      const apiRecorridoId = await this.obtenerApiRecorridoId(recorridoId);
+
+      if (apiRecorridoId) {
+        await this.put(
+          `/recorridos/${apiRecorridoId}/posiciones/${posicionId}`,
+          body, // 👈 SIN TRANSFORMAR
+        );
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : String(error);
+
+      console.error(
+        '❌ Error sincronizando actualización de posición:',
+        message,
+      );
+    }
+
+    this.operativoGateway.emitirPosicionActualizada(recorridoId, {
+      id: updatedLocal.id,
+      recorridoId: updatedLocal.recorridoId,
+      latitud: updatedLocal.latitud,
+      longitud: updatedLocal.longitud,
+      timestamp: updatedLocal.timestamp,
+      velocidad: updatedLocal.velocidad,
+      createdAt: updatedLocal.createdAt,
+    });
+
+    return updatedLocal;
   }
 
-  eliminarPosicion(recorridoId: string, posicionId: string) {
-    return this.delete(`/recorridos/${recorridoId}/posiciones/${posicionId}`);
+  async eliminarPosicion(recorridoId: string, posicionId: string) {
+    const deletedLocal =
+      await this.posicionService.remove(posicionId);
+
+    try {
+      const apiRecorridoId = await this.obtenerApiRecorridoId(recorridoId);
+
+      if (apiRecorridoId) {
+        await this.delete(
+          `/recorridos/${apiRecorridoId}/posiciones/${posicionId}`,
+        );
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : String(error);
+
+      console.error(
+        '❌ Error sincronizando eliminación de posición:',
+        message,
+      );
+    }
+
+    this.operativoGateway.emitirPosicionEliminada(
+      recorridoId,
+      posicionId,
+    );
+
+    return deletedLocal;
   }
+
 
   // ================= CALLES =================
 
