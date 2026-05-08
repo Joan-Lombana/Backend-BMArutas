@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../../../data-source';
+import { AppDataSource } from '../../../data-source';
 import { Rol, TipoRol } from '../entities/rol.entity';
 
 async function seedRoles() {

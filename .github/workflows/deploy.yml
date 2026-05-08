@@ -56,8 +56,12 @@ jobs:
         run: |
           tar -czf deploy.tar.gz \
             backend/dist \
+            backend/src \
             backend/package.json \
             backend/package-lock.json \
+            backend/tsconfig.json \
+            backend/tsconfig.build.json \
+            backend/nest-cli.json \
             rutas-service/dist \
             rutas-service/package.json \
             rutas-service/package-lock.json
@@ -87,23 +91,33 @@ jobs:
             echo "🧹 Limpiando proyecto..."
             rm -rf $ROOT/backend
             rm -rf $ROOT/rutas-service
+
             mkdir -p $ROOT
 
-            echo "📦 Extrayendo..."
+            echo "📦 Extrayendo proyecto..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📦 Instalando dependencias..."
+            echo "📦 Instalando dependencias backend..."
             cd $ROOT/backend
             npm install --omit=dev
 
+            echo "🗄️ Ejecutando migraciones..."
+            npx ts-node -r tsconfig-paths/register \
+            ./node_modules/typeorm/cli.js \
+            migration:run \
+            -d src/data-source.ts
+
+            echo "📦 Instalando dependencias rutas-service..."
             cd $ROOT/rutas-service
             npm install --omit=dev
 
-            echo "🔁 Reiniciando PM2 con ecosystem..."
+            echo "🔁 Reiniciando PM2..."
 
             cd $ROOT
-            pm2 delete all || true
+
+            pm2 reload ecosystem.config.js --update-env || \
             pm2 start ecosystem.config.js
+
             pm2 save
 
             echo "🔥 STATUS PM2:"

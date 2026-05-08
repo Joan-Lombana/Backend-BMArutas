@@ -1,4 +1,4 @@
-import { AppDataSource } from 'data-source';
+import { AppDataSource } from 'src/data-source';
 import * as bcrypt from 'bcrypt';
 
 import { Usuario } from '../usuario/entities/usuario.entity';

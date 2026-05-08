@@ -1,15 +1,12 @@
-// data-source.ts
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-// 🔥 Cargar .env SIEMPRE (clave para migraciones)
 dotenv.config({
   path: path.resolve(process.cwd(), '../.env'),
 });
 
-// 🔒 Validación segura
 const requiredEnv = [
   'DB_HOST',
   'DB_PORT',
@@ -26,7 +23,6 @@ if (missingEnv.length > 0) {
   );
 }
 
-// 🚀 DataSource
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
@@ -35,16 +31,17 @@ export const AppDataSource = new DataSource({
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
 
-  // ⚠️ IMPORTANTE: usar migraciones, no synchronize
   synchronize: false,
 
   logging: true,
 
-  // 👇 compatible con ts-node y build
-  entities: [path.join(__dirname, 'src/**/*.entity{.ts,.js}')],
+  entities: [
+    path.join(__dirname, '**/*.entity{.ts,.js}')
+  ],
 
-  // 👇 ruta correcta para migraciones
-  migrations: [path.join(__dirname, 'migrations/*{.ts,.js}')],
+  migrations: [
+    path.join(__dirname, 'migrations/*{.ts,.js}')
+  ],
 
   ssl: process.env.DB_SSL === 'true',
 });
