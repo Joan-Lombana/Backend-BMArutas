@@ -190,6 +190,16 @@ export class OperativoService {
   );
   } 
 
+  // Emitir cambio de estado del recorrido
+  emitirEstadoRecorrido(recorridoId: string, estado: string) {
+    this.operativoGateway.emitirEstadoRecorrido(recorridoId, estado);
+  }
+
+  // Emitir eliminación de recorrido
+  emitirRecorridoEliminado(recorridoId: string) {
+    this.operativoGateway.emitirRecorridoEliminado(recorridoId);
+  }
+
   obtenerRecorridoPorId(id: string) {
     return this.get(`/recorridos/${id}`);
   }
@@ -234,7 +244,7 @@ export class OperativoService {
   });
 
   // 3. Emitir WebSocket
-  this.operativoGateway.emitirPosicionCreada(recorridoId, {
+  this.operativoGateway.emitirPosicion(recorridoId, {
     id: posicion.id,
     recorridoId: posicion.recorridoId,
     latitud: posicion.latitud,
@@ -328,9 +338,9 @@ export class OperativoService {
       );
     }
 
-    this.operativoGateway.emitirPosicionEliminada(
+    this.operativoGateway.emitirPosicion(
       recorridoId,
-      posicionId,
+      deletedLocal,
     );
 
     return deletedLocal;

@@ -23,7 +23,12 @@ export class RecorridoService {
       estado: EstadoRecorrido.PROGRAMADA,
     });
 
-    return await this.recorridoRepo.save(recorrido);
+    const savedRecorrido = await this.recorridoRepo.save(recorrido);
+    
+    // 📡 Emitir evento WebSocket
+    this.operativoService.emitirEstadoRecorrido(savedRecorrido.id, EstadoRecorrido.PROGRAMADA);
+    
+    return savedRecorrido;
   }
 
   async obtenerTodos() {
@@ -63,13 +68,23 @@ export class RecorridoService {
   }
   // ✅ Actualizas estado local
   recorrido.estado = EstadoRecorrido.ACTIVA;
-  return this.recorridoRepo.save(recorrido);
+  const savedRecorrido = await this.recorridoRepo.save(recorrido);
+  
+  // 📡 Emitir evento WebSocket
+  this.operativoService.emitirEstadoRecorrido(id, EstadoRecorrido.ACTIVA);
+  
+  return savedRecorrido;
 }
 
   async pausar(id: string) {
     const recorrido = await this.obtenerPorId(id);
     recorrido.estado = EstadoRecorrido.PAUSADO;
-    return this.recorridoRepo.save(recorrido);
+    const savedRecorrido = await this.recorridoRepo.save(recorrido);
+    
+    // 📡 Emitir evento WebSocket
+    this.operativoService.emitirEstadoRecorrido(id, EstadoRecorrido.PAUSADO);
+    
+    return savedRecorrido;
   }
 
   async finalizar(id: string) {
@@ -96,7 +111,12 @@ export class RecorridoService {
   // ✅ Actualizas estado local SOLO si todo salió bien
   recorrido.estado = EstadoRecorrido.FINALIZADO;
 
-  return this.recorridoRepo.save(recorrido);
+  const savedRecorrido = await this.recorridoRepo.save(recorrido);
+  
+  // 📡 Emitir evento WebSocket
+  this.operativoService.emitirEstadoRecorrido(id, EstadoRecorrido.FINALIZADO);
+  
+  return savedRecorrido;
 }
 
   async eliminar(id: string) {
@@ -109,6 +129,11 @@ export class RecorridoService {
   );
  }
 
-  return this.recorridoRepo.remove(recorrido);
+  await this.recorridoRepo.remove(recorrido);
+  
+  // 📡 Emitir evento WebSocket
+  this.operativoService.emitirRecorridoEliminado(id);
+  
+  return { message: 'Recorrido eliminado correctamente' };
 }
 }

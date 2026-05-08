@@ -79,6 +79,23 @@ export class OperativoGateway
       recorridoId,
     };
   }
+  emitirEstadoRecorrido(recorridoId: string, estado: string) {
+  this.servidor
+    .to(`recorrido:${recorridoId}`)
+    .emit('recorrido.estado', {
+      recorridoId,
+      estado,
+    });
+}
+
+  // Emitir eliminación de recorrido
+  emitirRecorridoEliminado(recorridoId: string) {
+    this.servidor
+      .to(`recorrido:${recorridoId}`)
+      .emit('recorrido.eliminado', {
+        recorridoId,
+      });
+  }
 
   // Salir de un recorrido
   @SubscribeMessage('salirRecorrido')
@@ -101,14 +118,11 @@ export class OperativoGateway
   }
 
   // Emitir nueva posición
-  emitirPosicionCreada(
-    recorridoId: string,
-    posicion: PosicionTiempoReal,
-  ) {
-    this.servidor
-      .to(`recorrido:${recorridoId}`)
-      .emit('posicion.creada', posicion);
-  }
+  emitirPosicion(recorridoId: string, posicion: PosicionTiempoReal) {
+  this.servidor
+    .to(`recorrido:${recorridoId}`)
+    .emit('posicion', posicion);
+}
 
   // Emitir actualización de posición
   emitirPosicionActualizada(
@@ -118,17 +132,5 @@ export class OperativoGateway
     this.servidor
       .to(`recorrido:${recorridoId}`)
       .emit('posicion.actualizada', posicion);
-  }
-
-  // Emitir eliminación de posición
-  emitirPosicionEliminada(
-    recorridoId: string,
-    posicionId: string,
-  ) {
-    this.servidor
-      .to(`recorrido:${recorridoId}`)
-      .emit('posicion.eliminada', {
-        id: posicionId,
-      });
   }
 }

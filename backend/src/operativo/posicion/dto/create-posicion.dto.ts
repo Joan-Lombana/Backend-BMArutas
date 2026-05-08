@@ -22,8 +22,4 @@ export class CreatePosicionDto {
   @IsOptional()
   @IsNumber()
   velocidad?: number;
-
-  @IsOptional()
-  @IsString()
-  api_posicion_id?: string;
 }
