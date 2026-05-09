@@ -62,6 +62,12 @@ services:
       ROUTES_SERVICE_URL: ${ROUTES_SERVICE_URL}
     env_file:
       - ./.env
+
+    # 🔥 FIX IMPORTANTE
+    volumes:
+        - ./backend/src:/app/src
+        - /app/node_modules
+
     networks:
       - ecoruta_net
 
