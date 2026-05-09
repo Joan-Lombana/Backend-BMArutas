@@ -94,11 +94,6 @@ jobs:
             cd $ROOT/backend
             npm ci --omit=dev
 
-            echo "🗄️ Ejecutando migraciones..."
-            cd $ROOT/backend
-            test -f dist/data-source.js
-            npm run migration:run:prod
-
             echo "📦 Instalando rutas-service..."
             cd $ROOT/rutas-service
             npm ci --omit=dev
