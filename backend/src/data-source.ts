@@ -25,21 +25,14 @@ if (missingEnv.length > 0) {
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-
   host: process.env.DB_HOST,
-
   port: parseInt(process.env.DB_PORT as string, 10),
-
   username: process.env.POSTGRES_USER,
-
   password: process.env.POSTGRES_PASSWORD,
-
   database: process.env.POSTGRES_DB,
-
   synchronize: false,
-
   logging: true,
-
+  schema: 'public',
   entities: [
     path.join(__dirname, '**/*.entity{.ts,.js}')
   ],
