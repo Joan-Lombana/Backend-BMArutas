@@ -27,19 +27,15 @@ jobs:
       # -------------------------------
       # 3️⃣ Build backend
       # -------------------------------
-      - name: 🏗️ Construir backend y rutas-service
+      - name: 🏗️ Build backend y servicios
         run: |
-          echo "🏗️ Construyendo backend..."
           cd backend
           npm ci
           npm run build
-          cd ..
 
-          echo "🏗️ Construyendo rutas-service..."
-          cd rutas-service
+          cd ../rutas-service
           npm ci
           npm run build
-          cd ..
 
       # -------------------------------
       # 4️⃣ SSH
@@ -50,17 +46,15 @@ jobs:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       # -------------------------------
-      # 5️⃣ Empaquetar
+      # 5️⃣ Empaquetar SOLO build
       # -------------------------------
       - name: 📦 Empaquetar proyecto
         run: |
           tar -czf deploy.tar.gz \
             backend/dist \
-            backend/src \
             backend/package.json \
             backend/package-lock.json \
             backend/tsconfig.json \
-            backend/tsconfig.build.json \
             backend/nest-cli.json \
             rutas-service/dist \
             rutas-service/package.json \
@@ -79,40 +73,37 @@ jobs:
           ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/tmp/eco_backend/
 
       # -------------------------------
-      # 7️⃣ Deploy real
+      # 7️⃣ Deploy en servidor
       # -------------------------------
       - name: ⚡ Desplegar en servidor
         run: |
           ssh -o StrictHostKeyChecking=no \
           ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} '
-          
+
             ROOT=/home/joan/BMArutas-Backend
 
             echo "🧹 Limpiando proyecto..."
             rm -rf $ROOT/backend
             rm -rf $ROOT/rutas-service
-
             mkdir -p $ROOT
 
-            echo "📦 Extrayendo proyecto..."
+            echo "📦 Extrayendo..."
             tar -xzf /tmp/eco_backend/deploy.tar.gz -C $ROOT
 
-            echo "📦 Instalando dependencias backend..."
+            echo "📦 Instalando dependencias backend (PROD ONLY)..."
             cd $ROOT/backend
-            npm install
+            npm ci --omit=dev
 
-            echo "🗄️ Ejecutando migraciones..."
-            npx ts-node -r tsconfig-paths/register \
-            ./node_modules/typeorm/cli.js \
-            migration:run \
-            -d src/data-source.ts
+            echo "🗄️ Ejecutando migraciones (DESDE DIST)..."
+            node ./node_modules/typeorm/cli.js \
+              migration:run \
+              -d dist/data-source.js
 
-            echo "📦 Instalando dependencias rutas-service..."
+            echo "📦 Instalando rutas-service..."
             cd $ROOT/rutas-service
-            npm install --omit=dev
+            npm ci --omit=dev
 
             echo "🔁 Reiniciando PM2..."
-
             cd $ROOT
 
             pm2 reload ecosystem.config.js --update-env || \
@@ -120,7 +111,6 @@ jobs:
 
             pm2 save
 
-            echo "🔥 STATUS PM2:"
             pm2 status
 
             echo "🎉 Deploy terminado"
