@@ -99,7 +99,7 @@ jobs:
 
             echo "📦 Instalando dependencias backend..."
             cd $ROOT/backend
-            npm install --omit=dev
+            npm install
 
             echo "🗄️ Ejecutando migraciones..."
             npx ts-node -r tsconfig-paths/register \

@@ -18,7 +18,7 @@ export enum EstadoRecorrido {
   CANCELADO = 'Cancelado',
 }
 
-@Entity('recorridos')
+@Entity('recorrido')
 export class Recorrido {
 
   @PrimaryGeneratedColumn('uuid')

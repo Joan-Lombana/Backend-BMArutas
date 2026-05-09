@@ -8,7 +8,7 @@ import {
 
 import { Recorrido } from '../../recorrido/entities/recorrido.entity';
 
-@Entity('posiciones')
+@Entity('posicion')
 export class Posicion {
 
   @PrimaryGeneratedColumn('uuid')
