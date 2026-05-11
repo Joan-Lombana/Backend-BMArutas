@@ -29,7 +29,7 @@
     "seed:admin:dev": "ts-node -r tsconfig-paths/register src/autenticacion/seed/seed-admin.ts",
     "seed:admin:prod": "node dist/autenticacion/seed/seed-admin.js",
     "seed:roles:dev": "ts-node -r tsconfig-paths/register src/autenticacion/rol/seed/roles.seeder.ts",
-   "seed:roles:prod": "node dist/autenticacion/rol/seed/roles.seeder.js"
+    "seed:roles:prod": "node dist/autenticacion/rol/seed/roles.seeder.js"
   
   },
   "dependencies": {

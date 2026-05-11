@@ -19,8 +19,11 @@ class AutoMigration1778305531000 {
         await queryRunner.query(`
             CREATE TYPE "recorrido_estado_enum" AS ENUM (
                 'No programada',
-                'En curso',
-                'Finalizada'
+                'Programada',
+                'Activa',
+                'Pausado',
+                'Cancelado',
+                'Finalizado'
             )
         `);
 
