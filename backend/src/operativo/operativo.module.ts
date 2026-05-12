@@ -6,9 +6,10 @@ import { OperativoController } from './operativo.controller';
 import { OperativoGateway } from './operativo.gateway';
 import { PosicionModule } from './posicion/posicion.module';
 import { Recorrido } from './recorrido/entities/recorrido.entity';
+import { EventorecorridoModule } from './eventorecorrido/eventorecorrido.module';
 
 @Module({
-  imports: [HttpModule, PosicionModule, TypeOrmModule.forFeature([Recorrido])],
+  imports: [HttpModule, PosicionModule, TypeOrmModule.forFeature([Recorrido]), EventorecorridoModule],
   controllers: [OperativoController],
   providers: [OperativoService, OperativoGateway],
   exports: [OperativoService],

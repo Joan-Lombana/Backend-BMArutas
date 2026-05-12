@@ -6,11 +6,12 @@ import { RecorridoService } from './recorrido.service';
 
 import { OperativoModule } from '../operativo.module';
 import { RecorridoController } from './recorrido.controller';
+import { EventorecorridoModule } from '../eventorecorrido/eventorecorrido.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Recorrido]),
-    forwardRef(() => OperativoModule), // 👈 para usar OperativoService
+    forwardRef(() => OperativoModule), EventorecorridoModule // 👈 para usar OperativoService
   ],
   controllers: [RecorridoController],
   providers: [RecorridoService],
