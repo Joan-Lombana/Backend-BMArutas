@@ -35,6 +35,10 @@ export class ApilucioController {
   obtenerVehiculos(): Promise<VehiculoAPI[]> {
     return this.apilucioService.obtenerVehiculos();
   }
+  @Get('vehiculos/:id')
+  obtenerVehiculo(@Param('id') id: string): Promise<VehiculoAPI> {
+    return this.apilucioService.obtenerVehiculo(id);
+  }
 
   @Post('vehiculos')
   crearVehiculo(@Body() body: CrearVehiculoDto) {
@@ -58,6 +62,12 @@ export class ApilucioController {
   @Get('rutas')
   obtenerRutas(): Promise<RutaAPI[]> {
     return this.apilucioService.obtenerRutas();
+  }
+
+  @Get('rutas/:id')
+  obtenerRuta(
+    @Param('id') id: string,): Promise<RutaAPI | null> {
+    return this.apilucioService.obtenerRuta(id);
   }
 
   @Post('rutas')

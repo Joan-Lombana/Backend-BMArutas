@@ -7,6 +7,7 @@ import { PosicionService } from './posicion/posicion.service';
 import { OperativoGateway, PosicionTiempoReal } from './operativo.gateway';
 import { Recorrido } from './recorrido/entities/recorrido.entity';
 
+
 interface RecorridoApiResponse {
   id: string;
   [key: string]: any;

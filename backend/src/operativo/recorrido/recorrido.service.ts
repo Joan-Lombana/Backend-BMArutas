@@ -14,7 +14,7 @@ import {
 
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
+import { UsuarioService } from 'src/autenticacion/usuario/usuario.service';
 import { EventoRecorridoService } from '../eventorecorrido/eventorecorrido.service';
 
 @Injectable()
@@ -22,6 +22,7 @@ export class RecorridoService {
   constructor(
     private readonly operativoService: OperativoService,
     private readonly eventoService: EventoRecorridoService,
+    private readonly usuarioService: UsuarioService,
 
     @InjectRepository(Recorrido)
     private readonly recorridoRepo: Repository<Recorrido>,
@@ -66,8 +67,69 @@ export class RecorridoService {
   // =========================
 
   async obtenerTodos() {
-    return this.recorridoRepo.find();
+  const recorridos = await this.recorridoRepo.find({
+    order: { createdAt: 'DESC' },
+  });
+
+  // 🔹 TRAER RUTAS UNA SOLA VEZ
+  let rutasMap = new Map();
+
+  try {
+    const rutasRes: any = await this.operativoService.obtenerRutas();
+    const rutas = rutasRes?.data ?? [];
+
+    rutasMap = new Map(
+      rutas.map(r => [r.id, r])
+    );
+
+  } catch (error) {
+    console.error('❌ Error obteniendo rutas');
   }
+
+  const recorridosEnriquecidos = await Promise.all(
+    recorridos.map(async (recorrido) => {
+
+      let vehiculo: any = null;
+      let conductor: any = null;
+
+      // =========================
+      // RUTA (SIN API ROTA)
+      // =========================
+      const ruta = rutasMap.get(recorrido.ruta_id) || null;
+
+      // =========================
+      // VEHÍCULO
+      // =========================
+      try {
+        vehiculo = await this.operativoService.obtenerVehiculoPorId(
+          recorrido.vehiculo_id,
+        );
+      } catch (error) {
+        console.error('❌ Error vehículo:', recorrido.vehiculo_id);
+      }
+
+      // =========================
+      // CONDUCTOR
+      // =========================
+      try {
+        conductor = await this.usuarioService.findOne(
+          recorrido.conductor_id,
+        );
+      } catch (error) {
+        console.error('❌ Error conductor:', recorrido.conductor_id);
+      }
+
+      return {
+        ...recorrido,
+        ruta,
+        vehiculo: vehiculo || null,
+        conductor: conductor || null,
+      };
+    }),
+  );
+
+  return recorridosEnriquecidos;
+}
 
   // =========================
   // OBTENER POR ID

@@ -79,6 +79,50 @@ export class OperativoGateway
       recorridoId,
     };
   }
+
+  @SubscribeMessage('unirseConductor')
+  manejarUnionConductor(
+    @MessageBody() conductorId: string,
+    @ConnectedSocket() cliente: Socket,
+  ) {
+    const sala = `conductor:${conductorId}`;
+
+    cliente.join(sala);
+
+    this.logger.log(
+      `👤 Socket ${cliente.id} unido a sala ${sala}`,
+    );
+
+    return {
+      evento: 'conductor.unido',
+      conductorId,
+    };
+  }
+
+  @SubscribeMessage('salirConductor')
+  manejarSalidaConductor(
+    @MessageBody() conductorId: string,
+    @ConnectedSocket() cliente: Socket,
+  ) {
+    const sala = `conductor:${conductorId}`;
+
+    cliente.leave(sala);
+
+    this.logger.log(
+      `📤 Socket ${cliente.id} salió de sala ${sala}`,
+    );
+
+    return {
+      evento: 'conductor.salio',
+      conductorId,
+    };
+  }
+
+  emitirRecorridoAsignado(conductorId: string, recorrido: any) {
+    this.servidor
+      .to(`conductor:${conductorId}`)
+      .emit('recorrido.asignado', recorrido);
+  }
   emitirEstadoRecorrido(recorridoId: string, estado: string) {
   this.servidor
     .to(`recorrido:${recorridoId}`)

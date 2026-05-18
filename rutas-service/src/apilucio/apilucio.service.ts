@@ -37,6 +37,21 @@ export class ApilucioService {
     return res.data;
   }
 
+  async obtenerVehiculo(id: string): Promise<VehiculoAPI> {
+  const res = await lastValueFrom(
+    this.http.get(
+      `${this.baseUrl}/vehiculos/${id}`,
+      {
+        params: {
+          perfil_id: this.perfilId,
+        },
+      },
+    ),
+  );
+  return res.data;
+}
+
+
   async crearVehiculo(body: { placa: string; marca?: string; modelo?: string; activo?: boolean }): Promise<VehiculoAPI> {
     const res = await lastValueFrom(
       this.http.post(`${this.baseUrl}/vehiculos`, {
@@ -75,6 +90,25 @@ export class ApilucioService {
     );
     return res.data;
   }
+
+  async obtenerRuta(id: string): Promise<RutaAPI> {
+  try {
+    const res = await lastValueFrom(
+      this.http.get(`${this.baseUrl}/rutas/${id}`, {
+        params: { perfil_id: this.perfilId },
+      }),
+    );
+
+    return res.data;
+  } catch (error: any) {
+    console.log('🔥 ERROR COMPLETO RUTA:');
+    console.log(error.response?.data);
+    console.log(error.response?.status);
+    console.log(error.message);
+
+    throw error;
+  }
+}
 
   async crearRuta(body: any): Promise<any> {
     const res = await lastValueFrom(
