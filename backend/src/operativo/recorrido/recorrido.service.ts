@@ -37,6 +37,7 @@ export class RecorridoService {
       ruta_id: dto.ruta_id,
       vehiculo_id: dto.vehiculo_id,
       conductor_id: dto.conductor_id,
+      fecha_programada: dto.fecha_programada,
       estado: EstadoRecorrido.PROGRAMADA,
     });
 
@@ -67,69 +68,55 @@ export class RecorridoService {
   // =========================
 
   async obtenerTodos() {
-  const recorridos = await this.recorridoRepo.find({
-    order: { createdAt: 'DESC' },
-  });
+    const recorridos = await this.recorridoRepo.find({
+      order: { createdAt: 'DESC' },
+    });
 
-  // 🔹 TRAER RUTAS UNA SOLA VEZ
-  let rutasMap = new Map();
+    // 🔹 TRAER RUTAS UNA SOLA VEZ
+    let rutasMap = new Map();
+    try {
+      const rutasRes: any = await this.operativoService.obtenerRutas();
+      const rutas = rutasRes?.data ?? [];
+      rutasMap = new Map(rutas.map(r => [r.id, r]));
+    } catch (error) {
+      console.error('❌ Error obteniendo rutas');
+    }
 
-  try {
-    const rutasRes: any = await this.operativoService.obtenerRutas();
-    const rutas = rutasRes?.data ?? [];
+    // 🚗 Obtener vehículos del microservicio en bloque
+    let vehiculosMap = new Map();
+    try {
+      const vehiculos: any = await this.operativoService.obtenerVehiculos();
+      vehiculosMap = new Map(
+        (Array.isArray(vehiculos) ? vehiculos : []).map((v: any) => [v.id, v]),
+      );
+    } catch (error) {
+      console.error('⚠️ No se pudieron obtener detalles de vehículos:', error.message);
+    }
 
-    rutasMap = new Map(
-      rutas.map(r => [r.id, r])
+    const recorridosEnriquecidos = await Promise.all(
+      recorridos.map(async (recorrido) => {
+        let conductor: any = null;
+
+        // =========================
+        // CONDUCTOR
+        // =========================
+        try {
+          conductor = await this.usuarioService.findOne(recorrido.conductor_id);
+        } catch (error) {
+          console.error('❌ Error conductor:', recorrido.conductor_id);
+        }
+
+        return {
+          ...recorrido,
+          ruta: rutasMap.get(recorrido.ruta_id) || null,
+          vehiculo: vehiculosMap.get(recorrido.vehiculo_id) || null,
+          conductor: conductor || null,
+        };
+      }),
     );
 
-  } catch (error) {
-    console.error('❌ Error obteniendo rutas');
+    return recorridosEnriquecidos;
   }
-
-  const recorridosEnriquecidos = await Promise.all(
-    recorridos.map(async (recorrido) => {
-
-      let vehiculo: any = null;
-      let conductor: any = null;
-
-      // =========================
-      // RUTA (SIN API ROTA)
-      // =========================
-      const ruta = rutasMap.get(recorrido.ruta_id) || null;
-
-      // =========================
-      // VEHÍCULO
-      // =========================
-      try {
-        vehiculo = await this.operativoService.obtenerVehiculoPorId(
-          recorrido.vehiculo_id,
-        );
-      } catch (error) {
-        console.error('❌ Error vehículo:', recorrido.vehiculo_id);
-      }
-
-      // =========================
-      // CONDUCTOR
-      // =========================
-      try {
-        conductor = await this.usuarioService.findOne(
-          recorrido.conductor_id,
-        );
-      } catch (error) {
-        console.error('❌ Error conductor:', recorrido.conductor_id);
-      }
-
-      return {
-        ...recorrido,
-        ruta,
-        vehiculo: vehiculo || null,
-        conductor: conductor || null,
-      };
-    }),
-  );
-
-  return recorridosEnriquecidos;
-}
 
   // =========================
   // OBTENER POR ID
@@ -193,23 +180,26 @@ export class RecorridoService {
     }
 
     try {
+      // Solo llamar a la API externa la primera vez (cuando está Programada)
+      // Si está en pausa, no volver a iniciar en la API externa.
+      if (recorrido.estado === EstadoRecorrido.PROGRAMADA) {
+        // 🔥 API EXTERNA
+        const apiResponse =
+          await this.operativoService.iniciarRecorrido({
+            ruta_id: recorrido.ruta_id,
+            vehiculo_id: recorrido.vehiculo_id,
+          });
 
-      // 🔥 API EXTERNA
-      const apiResponse =
-        await this.operativoService.iniciarRecorrido({
-          ruta_id: recorrido.ruta_id,
-          vehiculo_id: recorrido.vehiculo_id,
-        });
+        console.log(
+          '🌐 Respuesta API externa:',
+          apiResponse,
+        );
 
-      console.log(
-        '🌐 Respuesta API externa:',
-        apiResponse,
-      );
-
-      // 🧠 Guardar ID externo
-      if (apiResponse?.id) {
-        recorrido.api_recorrido_id =
-          apiResponse.id;
+        // 🧠 Guardar ID externo
+        if (apiResponse?.id) {
+          recorrido.api_recorrido_id =
+            apiResponse.id;
+        }
       }
 
     } catch (error) {

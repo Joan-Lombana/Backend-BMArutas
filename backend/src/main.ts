@@ -3,17 +3,21 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
 
-  console.log('DB_HOST:', process.env.DB_HOST);
-  console.log('DB_PORT:', process.env.DB_PORT);
-  console.log('POSTGRES_USER:', process.env.POSTGRES_USER);
-  console.log('POSTGRES_PASSWORD:', process.env.POSTGRES_PASSWORD);
-  console.log('POSTGRES_DB:', process.env.POSTGRES_DB);
+  // Credenciales removidas por seguridad
 
-  const app = await NestFactory.create(AppModule);
+
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false, // Desactivamos el de por defecto para que no haya conflicto
+  });
+
+  // ✅ Configuramos el parser manualmente con el límite de 50MB
+  const { json, urlencoded } = require('express');
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
 
   app.setGlobalPrefix('api');
-
-  // ✅ CORS abierto para app web + app móvil
+  
+  // ✅ CORS
   app.enableCors({
     origin: true,
     credentials: true,

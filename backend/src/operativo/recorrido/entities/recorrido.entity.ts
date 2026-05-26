@@ -57,6 +57,12 @@ export class Recorrido {
   })
   fecha_fin?: Date;
 
+  @Column({
+    nullable: true,
+    type: 'timestamp'
+  })
+  fecha_programada?: Date;
+
   @OneToMany(
     () => Posicion,
     posicion => posicion.recorrido

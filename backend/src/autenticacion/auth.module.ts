@@ -18,6 +18,12 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  console.error('FATAL ERROR: JWT_SECRET is not defined.');
+  process.exit(1);
+}
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([Usuario, Rol, Perfil]),
@@ -25,7 +31,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     RolModule,
     PerfilModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'mi_super_clave_secreta', // 👈 puede venir del .env
+      secret: jwtSecret,
       signOptions: { expiresIn: '1h' },
     }),
   ],

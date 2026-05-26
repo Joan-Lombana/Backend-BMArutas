@@ -124,12 +124,15 @@ export class OperativoGateway
       .emit('recorrido.asignado', recorrido);
   }
   emitirEstadoRecorrido(recorridoId: string, estado: string) {
+  // Emitir a la sala específica
   this.servidor
     .to(`recorrido:${recorridoId}`)
     .emit('recorrido.estado', {
       recorridoId,
       estado,
     });
+  // Emitir globalmente para paneles administrativos
+  this.servidor.emit('recorrido.estado', { recorridoId, estado });
 }
 
   // Emitir eliminación de recorrido
