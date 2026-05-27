@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HttpService } from '@nestjs/axios';
 import { Repository } from 'typeorm';
@@ -16,6 +16,11 @@ interface RecorridoApiResponse {
 @Injectable()
 export class OperativoService {
   private readonly baseUrl: string;
+  /**
+   * Mapa efímero local->externo para asociar posiciones recién sincronizadas.
+   * Evita consultas extra cuando la foto se sube justo después de crear la posición.
+   */
+  private readonly apiPosicionIdByLocalId = new Map<string, string>();
 
   constructor(
     private readonly http: HttpService,
@@ -192,8 +197,8 @@ export class OperativoService {
   } 
 
   // Emitir cambio de estado del recorrido
-  emitirEstadoRecorrido(recorridoId: string, estado: string) {
-    this.operativoGateway.emitirEstadoRecorrido(recorridoId, estado);
+  emitirEstadoRecorrido(recorridoId: string, estado: string, rutaId?: string) {
+    this.operativoGateway.emitirEstadoRecorrido(recorridoId, estado, rutaId);
   }
 
   // Emitir recorrido asignado al conductor
@@ -263,7 +268,7 @@ export class OperativoService {
   // 4. Sincronizar con microservicio (SI EXISTE)
   if (recorrido.api_recorrido_id) {
     try {
-      await this.post(
+      const posicionApi = await this.post<any>(
         `/recorridos/${recorrido.api_recorrido_id}/posiciones`,
         {
           lat: posicion.latitud,
@@ -271,6 +276,10 @@ export class OperativoService {
           perfil_id: body.perfil_id ?? null,
         },
       );
+
+      if (posicionApi?.id) {
+        this.apiPosicionIdByLocalId.set(posicion.id, String(posicionApi.id));
+      }
     } catch (error: any) {
       console.error('❌ Error API externa:', error.message);
     }
@@ -278,7 +287,139 @@ export class OperativoService {
     return posicion;
   }
 
+  // ================= IMÁGENES DE POSICIÓN =================
+  async subirImagenPosicion(posicionId: string, imagenBase64: string) {
+    if (!imagenBase64 || typeof imagenBase64 !== 'string') {
+      throw new BadRequestException('El campo imagen es obligatorio');
+    }
+
+    // 1. Guardar en DB local
+    const posicionActualizada = await this.posicionService.actualizarImagen(posicionId, imagenBase64);
+
+    // 2. Sincronizar asíncronamente con la API del profesor (apilucio) si el recorrido está vinculado
+    const recorrido = await this.recorridoRepo.findOne({ where: { id: posicionActualizada.recorridoId } });
+    if (recorrido?.api_recorrido_id) {
+      const apiPosicionId = await this.resolverApiPosicionId(
+        recorrido.api_recorrido_id,
+        posicionActualizada,
+      );
+
+      if (apiPosicionId) {
+        this.post(
+          `/recorridos/${recorrido.api_recorrido_id}/posiciones/${apiPosicionId}/imagen`,
+          { imagen: imagenBase64 },
+        ).catch(err =>
+          console.error('⚠️ Error sincronizando imagen con API del profesor:', err.message),
+        );
+      } else {
+        console.warn(
+          `⚠️ No se encontró posición externa para sincronizar imagen. local=${posicionActualizada.id} recorridoApi=${recorrido.api_recorrido_id}`,
+        );
+      }
+    }
+
+    // 3. Emitir evento WebSocket (antes fallaba: se usaba .server en lugar de .servidor)
+    this.operativoGateway.emitirFotoEnVivo(posicionActualizada.recorridoId, {
+      posicion_id: posicionActualizada.id,
+      lat: Number(posicionActualizada.latitud),
+      lon: Number(posicionActualizada.longitud),
+      capturado_ts: Number(posicionActualizada.timestamp),
+    });
+
+    return { status: 'success', message: 'Imagen guardada correctamente', id: posicionId };
+  }
+
+  /**
+   * Obtiene el id de posición en API externa a partir de una posición local.
+   */
+  private async resolverApiPosicionId(
+    apiRecorridoId: string,
+    posicionLocal: {
+      id: string;
+      latitud: number | string;
+      longitud: number | string;
+      timestamp: number | string;
+    },
+  ): Promise<string | null> {
+    const cached = this.apiPosicionIdByLocalId.get(posicionLocal.id);
+    if (cached) return cached;
+
+    try {
+      const posicionesApi = await this.get<any[]>(
+        `/recorridos/${apiRecorridoId}/posiciones`,
+      );
+      if (!Array.isArray(posicionesApi) || posicionesApi.length === 0) {
+        return null;
+      }
+
+      const latLocal = Number(posicionLocal.latitud);
+      const lonLocal = Number(posicionLocal.longitud);
+      const tsLocal = Number(posicionLocal.timestamp);
+      const TOL = 0.00002; // ~2m aprox, suficiente para redondeos decimales
+
+      const candidatas = posicionesApi.filter((p: any) => {
+        const lat = Number(p.lat);
+        const lon = Number(p.lon);
+        return (
+          Number.isFinite(lat) &&
+          Number.isFinite(lon) &&
+          Math.abs(lat - latLocal) <= TOL &&
+          Math.abs(lon - lonLocal) <= TOL
+        );
+      });
+
+      const base = candidatas.length > 0 ? candidatas : posicionesApi;
+      const ordenadas = [...base].sort((a: any, b: any) => {
+        const ta = Number(new Date(a.created_at ?? a.updated_at ?? 0).getTime());
+        const tb = Number(new Date(b.created_at ?? b.updated_at ?? 0).getTime());
+        const diffTiempo = Math.abs(tb - tsLocal) - Math.abs(ta - tsLocal);
+        if (diffTiempo !== 0) return diffTiempo;
+
+        const da =
+          Math.abs(Number(a.lat) - latLocal) + Math.abs(Number(a.lon) - lonLocal);
+        const db =
+          Math.abs(Number(b.lat) - latLocal) + Math.abs(Number(b.lon) - lonLocal);
+        return da - db;
+      });
+
+      const encontrada = ordenadas[0];
+      if (encontrada?.id) {
+        const id = String(encontrada.id);
+        this.apiPosicionIdByLocalId.set(posicionLocal.id, id);
+        return id;
+      }
+    } catch (error: any) {
+      console.error(
+        '⚠️ Error resolviendo id de posición externa para imagen:',
+        error.message,
+      );
+    }
+
+    return null;
+  }
+
+  async listarFotosRecorrido(recorridoId: string) {
+    const posiciones = await this.posicionService.obtenerPosicionesPorRecorrido(recorridoId);
+    return posiciones
+      .filter(p => !!p.imagen_base64)
+      .map(p => ({
+        posicion_id: p.id,
+        lat: Number(p.latitud),
+        lon: Number(p.longitud),
+        capturado_ts: Number(p.timestamp),
+      }));
+  }
+
+  async obtenerImagenPosicion(posicionId: string) {
+    const posicion = await this.posicionService.obtenerPosicionPorId(posicionId);
+    if (!posicion || !posicion.imagen_base64) {
+      throw new NotFoundException('Imagen no encontrada para esta posición');
+    }
+    return posicion.imagen_base64;
+  }
+
   async obtenerPosiciones(recorridoId: string) {
+
     return this.posicionService.obtenerPosicionesPorRecorrido(recorridoId);
   }
 

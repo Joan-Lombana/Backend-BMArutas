@@ -54,7 +54,14 @@ export class Posicion {
   })
   sincronizadoOffline!: boolean;
 
+  @Column({
+    type: 'text',
+    nullable: true
+  })
+  imagen_base64!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 }
+
 

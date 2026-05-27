@@ -1,4 +1,4 @@
-import { Controller, Patch, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Patch, Get, Post, Put, Delete, Body, Param, Res } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
 
 
@@ -121,6 +121,11 @@ export class OperativoController {
     return this.operativoService.obtenerPosiciones(recorridoId);
   }
 
+  @Get('recorridos/:id/posiciones/fotos')
+  listarFotosRecorrido(@Param('id') recorridoId: string) {
+    return this.operativoService.listarFotosRecorrido(recorridoId);
+  }
+
   @Post('recorridos/:id/posiciones')
   crearPosicion(@Param('id') recorridoId: string, @Body() body: any) {
     return this.operativoService.crearPosicion(recorridoId, body);
@@ -132,6 +137,33 @@ export class OperativoController {
     @Param('posicionId') posicionId: string
   ) {
     return this.operativoService.obtenerPosiciones(recorridoId);
+  }
+
+  // === IMAGEN DE POSICIÓN ===
+  @Post('recorridos/posiciones/:posicionId/imagen')
+  subirImagenPosicion(
+    @Param('posicionId') posicionId: string,
+    @Body() body: any
+  ) {
+    return this.operativoService.subirImagenPosicion(posicionId, body.imagen);
+  }
+
+  @Get('recorridos/posiciones/:posicionId/imagen')
+  async obtenerImagenPosicion(@Param('posicionId') posicionId: string, @Res() res: any) {
+    const base64Str = await this.operativoService.obtenerImagenPosicion(posicionId);
+
+    const match = base64Str.match(/^data:image\/(.+);base64,(.*)$/s);
+    if (match) {
+      const ext = match[1];
+      const buffer = Buffer.from(match[2], 'base64');
+      res.set('Content-Type', `image/${ext}`);
+      return res.send(buffer);
+    }
+
+    // Fallback: base64 sin prefijo data:image/...
+    const buffer = Buffer.from(base64Str, 'base64');
+    res.set('Content-Type', 'image/jpeg');
+    return res.send(buffer);
   }
 
   @Put('recorridos/:id/posiciones/:posicionId')

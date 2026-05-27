@@ -123,16 +123,17 @@ export class OperativoGateway
       .to(`conductor:${conductorId}`)
       .emit('recorrido.asignado', recorrido);
   }
-  emitirEstadoRecorrido(recorridoId: string, estado: string) {
+  emitirEstadoRecorrido(recorridoId: string, estado: string, rutaId?: string) {
   // Emitir a la sala específica
   this.servidor
     .to(`recorrido:${recorridoId}`)
     .emit('recorrido.estado', {
       recorridoId,
       estado,
+      rutaId
     });
   // Emitir globalmente para paneles administrativos
-  this.servidor.emit('recorrido.estado', { recorridoId, estado });
+  this.servidor.emit('recorrido.estado', { recorridoId, estado, rutaId });
 }
 
   // Emitir eliminación de recorrido
@@ -194,5 +195,19 @@ export class OperativoGateway
     this.servidor
       .to(`recorrido:${recorridoId}`)
       .emit('posicion.actualizada', posicion);
+  }
+
+  /** Notifica al panel admin y a clientes en la sala del recorrido que hay una nueva foto. */
+  emitirFotoEnVivo(
+    recorridoId: string,
+    payload: {
+      posicion_id: string;
+      lat: number;
+      lon: number;
+      capturado_ts: number;
+    },
+  ) {
+    this.servidor.emit('location:photo', payload);
+    this.servidor.to(`recorrido:${recorridoId}`).emit('location:photo', payload);
   }
 }

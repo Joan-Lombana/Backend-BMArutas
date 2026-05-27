@@ -10,14 +10,14 @@ async function bootstrap() {
     bodyParser: false, // Desactivamos el de por defecto para que no haya conflicto
   });
 
-  // ✅ Configuramos el parser manualmente con el límite de 50MB
+  // Configuramos el parser manualmente con el límite de 5MB
   const { json, urlencoded } = require('express');
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ limit: '50mb', extended: true }));
+  app.use(json({ limit: '5mb' }));
+  app.use(urlencoded({ limit: '5mb', extended: true }));
 
   app.setGlobalPrefix('api');
-  
-  // ✅ CORS
+
+  // CORS
   app.enableCors({
     origin: true,
     credentials: true,

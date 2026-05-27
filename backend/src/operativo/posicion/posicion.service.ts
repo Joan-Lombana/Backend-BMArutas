@@ -39,8 +39,15 @@ export class PosicionService {
     return this.posicionRepo.save(posicion);
   }
 
+  async actualizarImagen(id: string, imagenBase64: string) {
+    const posicion = await this.obtenerPosicionPorId(id);
+    posicion.imagen_base64 = imagenBase64;
+    return this.posicionRepo.save(posicion);
+  }
+
   async remove(id: string) {
     const posicion = await this.obtenerPosicionPorId(id);
     return this.posicionRepo.remove(posicion);
   }
 }
+

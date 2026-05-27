@@ -26,7 +26,7 @@ export class RecorridoService {
 
     @InjectRepository(Recorrido)
     private readonly recorridoRepo: Repository<Recorrido>,
-  ) {}
+  ) { }
 
   // =========================
   // CREAR
@@ -82,20 +82,21 @@ export class RecorridoService {
       console.error('❌ Error obteniendo rutas');
     }
 
-    // 🚗 Obtener vehículos del microservicio en bloque
-    let vehiculosMap = new Map();
-    try {
-      const vehiculos: any = await this.operativoService.obtenerVehiculos();
-      vehiculosMap = new Map(
-        (Array.isArray(vehiculos) ? vehiculos : []).map((v: any) => [v.id, v]),
-      );
-    } catch (error) {
-      console.error('⚠️ No se pudieron obtener detalles de vehículos:', error.message);
-    }
-
     const recorridosEnriquecidos = await Promise.all(
       recorridos.map(async (recorrido) => {
         let conductor: any = null;
+        let vehiculo: any = null;
+
+        // =========================
+        // VEHÍCULO
+        // =========================
+        try {
+          vehiculo = await this.operativoService.obtenerVehiculoPorId(
+            recorrido.vehiculo_id,
+          );
+        } catch (error) {
+          console.error('❌ Error vehículo:', recorrido.vehiculo_id);
+        }
 
         // =========================
         // CONDUCTOR
@@ -109,7 +110,7 @@ export class RecorridoService {
         return {
           ...recorrido,
           ruta: rutasMap.get(recorrido.ruta_id) || null,
-          vehiculo: vehiculosMap.get(recorrido.vehiculo_id) || null,
+          vehiculo: vehiculo || null,
           conductor: conductor || null,
         };
       }),
@@ -244,6 +245,7 @@ export class RecorridoService {
     this.operativoService.emitirEstadoRecorrido(
       savedRecorrido.id,
       EstadoRecorrido.ACTIVA,
+      savedRecorrido.ruta_id
     );
 
     return savedRecorrido;
@@ -388,6 +390,7 @@ export class RecorridoService {
     this.operativoService.emitirEstadoRecorrido(
       savedRecorrido.id,
       EstadoRecorrido.FINALIZADO,
+      savedRecorrido.ruta_id
     );
 
     return savedRecorrido;
