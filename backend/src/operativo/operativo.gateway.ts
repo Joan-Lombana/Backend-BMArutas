@@ -161,6 +161,21 @@ export class OperativoGateway
     };
   }
 
+  // Recibir posición desde el conductor y rebroadcastear a la sala del recorrido
+  @SubscribeMessage('posicion')
+  manejarPosicion(
+    @MessageBody() posicion: PosicionTiempoReal,
+    @ConnectedSocket() cliente: Socket,
+  ) {
+    const sala = `recorrido:${posicion.recorridoId}`;
+
+    this.servidor.to(sala).emit('posicion', posicion);
+
+    this.logger.log(
+      `📡 Posición recibida de ${cliente.id} → sala ${sala}`,
+    );
+  }
+
   // Emitir nueva posición
   emitirPosicion(recorridoId: string, posicion: PosicionTiempoReal) {
   this.servidor

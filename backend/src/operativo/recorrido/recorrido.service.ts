@@ -53,10 +53,10 @@ export class RecorridoService {
       },
     );
 
-    // 📡 Emitir WebSocket
-    this.operativoService.emitirEstadoRecorrido(
-      savedRecorrido.id,
-      EstadoRecorrido.PROGRAMADA,
+    // 📡 Emitir WebSocket al conductor asignado
+    this.operativoService.emitirRecorridoAsignado(
+      savedRecorrido.conductor_id,
+      savedRecorrido,
     );
 
     return savedRecorrido;
