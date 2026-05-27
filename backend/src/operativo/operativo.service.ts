@@ -196,6 +196,11 @@ export class OperativoService {
     this.operativoGateway.emitirEstadoRecorrido(recorridoId, estado);
   }
 
+  // Emitir recorrido asignado al conductor
+  emitirRecorridoAsignado(conductorId: string, recorrido: any) {
+    this.operativoGateway.emitirRecorridoAsignado(conductorId, recorrido);
+  }
+
   // Emitir eliminación de recorrido
   emitirRecorridoEliminado(recorridoId: string) {
     this.operativoGateway.emitirRecorridoEliminado(recorridoId);
