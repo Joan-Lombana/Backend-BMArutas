@@ -45,11 +45,6 @@ export class Recorrido {
   })
   api_recorrido_id?: string;
 
-  @Column({
-    nullable: true,
-    type: 'timestamp'
-  })
-  fecha_inicio?: Date;
 
   @Column({
     nullable: true,
