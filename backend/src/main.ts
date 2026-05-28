@@ -12,8 +12,8 @@ async function bootstrap() {
 
   // Configuramos el parser manualmente con el límite de 5MB
   const { json, urlencoded } = require('express');
-  app.use(json({ limit: '5mb' }));
-  app.use(urlencoded({ limit: '5mb', extended: true }));
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
 
   app.setGlobalPrefix('api');
 

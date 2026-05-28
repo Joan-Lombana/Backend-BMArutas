@@ -130,6 +130,22 @@ export class ApilucioController {
     return this.apilucioService.eliminarPosicion(recorridoId, posicionId);
   }
 
+  @Get('recorridos/:id/posiciones/:posicionId/imagen')
+  obtenerImagenPosicion(
+    @Param('id') recorridoId: string,
+    @Param('posicionId') posicionId: string,
+  ) {
+    return this.apilucioService.obtenerImagenPosicion(recorridoId, posicionId);
+  }
+
+  @Post('recorridos/posiciones/:posicionId/imagen')
+  subirImagenPosicion(
+    @Param('posicionId') posicionId: string,
+    @Body() body: any,
+  ) {
+    return this.apilucioService.subirImagenPosicion(posicionId, body.imagen_base64);
+  }
+
   // ================= CALLES =================
   @Get('calles')
   obtenerCalles(): Promise<CalleAPI[]> {

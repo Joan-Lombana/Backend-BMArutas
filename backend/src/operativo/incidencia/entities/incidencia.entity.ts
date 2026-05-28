@@ -11,27 +11,30 @@ import { Recorrido } from '../../recorrido/entities/recorrido.entity';
 @Entity('incidencia')
 export class Incidencia {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'recorrido_id', nullable: true })
-  recorrido_id: string;
+  recorrido_id!: string;
 
   @ManyToOne(() => Recorrido, { nullable: true })
   @JoinColumn({ name: 'recorrido_id' })
-  recorrido: Recorrido;
+  recorrido?: Recorrido;
 
   @Column()
-  tipo: string;
+  tipo!: string;
 
   @Column({ type: 'text' })
-  descripcion: string;
+  descripcion!: string;
 
   @Column({ type: 'text', nullable: true })
-  foto: string;
+  foto!: string;
 
   @Column({ type: 'bigint', nullable: true })
-  timestamp: number;
+  timestamp!: number;
+
+  @Column({ nullable: true })
+  api_incidencia_id?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

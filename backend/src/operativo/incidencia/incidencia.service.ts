@@ -16,6 +16,15 @@ export class IncidenciaService {
     ) as any;
   }
 
+  async update(id: string, data: any): Promise<Incidencia> {
+    await this.incidenciaRepository.update(id, data);
+    return (await this.incidenciaRepository.findOne({ where: { id } }))!;
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.incidenciaRepository.delete(id);
+  }
+
   async findAll(): Promise<Incidencia[]> {
     return await this.incidenciaRepository.find({
       relations: ['recorrido'],

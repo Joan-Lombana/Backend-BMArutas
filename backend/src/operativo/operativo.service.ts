@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { PosicionService } from './posicion/posicion.service';
 import { OperativoGateway, PosicionTiempoReal } from './operativo.gateway';
 import { Recorrido } from './recorrido/entities/recorrido.entity';
+import { EstadoRecorrido } from './recorrido/entities/recorrido.entity';
 
 
 interface RecorridoApiResponse {
@@ -293,40 +294,48 @@ export class OperativoService {
       throw new BadRequestException('El campo imagen es obligatorio');
     }
 
-    // 1. Guardar en DB local
-    const posicionActualizada = await this.posicionService.actualizarImagen(posicionId, imagenBase64);
+    // 1. Obtener la posición y el recorrido asociado
+    const posicion = await this.posicionService.obtenerPosicionPorId(posicionId);
+    const recorrido = await this.recorridoRepo.findOne({ where: { id: posicion.recorridoId } });
 
-    // 2. Sincronizar asíncronamente con la API del profesor (apilucio) si el recorrido está vinculado
-    const recorrido = await this.recorridoRepo.findOne({ where: { id: posicionActualizada.recorridoId } });
-    if (recorrido?.api_recorrido_id) {
+    if (!recorrido) {
+      throw new BadRequestException('No se encontró el recorrido asociado a esta posición');
+    }
+
+    if (recorrido.estado !== EstadoRecorrido.ACTIVA) {
+      throw new BadRequestException(
+        'Solo se pueden subir imágenes en recorridos activos'
+      );
+    }
+
+    // 2. Enviar a API externa si el recorrido está vinculado
+    if (recorrido.api_recorrido_id) {
       const apiPosicionId = await this.resolverApiPosicionId(
         recorrido.api_recorrido_id,
-        posicionActualizada,
+        posicion,
       );
 
       if (apiPosicionId) {
-        this.post(
-          `/recorridos/${recorrido.api_recorrido_id}/posiciones/${apiPosicionId}/imagen`,
-          { imagen: imagenBase64 },
-        ).catch(err =>
-          console.error('⚠️ Error sincronizando imagen con API del profesor:', err.message),
+        await this.post(
+          `/recorridos/posiciones/${apiPosicionId}/imagen`,
+          { imagen_base64: imagenBase64 },
         );
       } else {
         console.warn(
-          `⚠️ No se encontró posición externa para sincronizar imagen. local=${posicionActualizada.id} recorridoApi=${recorrido.api_recorrido_id}`,
+          `⚠️ No se encontró posición externa para sincronizar imagen. local=${posicion.id} recorridoApi=${recorrido.api_recorrido_id}`,
         );
       }
     }
 
-    // 3. Emitir evento WebSocket (antes fallaba: se usaba .server en lugar de .servidor)
-    this.operativoGateway.emitirFotoEnVivo(posicionActualizada.recorridoId, {
-      posicion_id: posicionActualizada.id,
-      lat: Number(posicionActualizada.latitud),
-      lon: Number(posicionActualizada.longitud),
-      capturado_ts: Number(posicionActualizada.timestamp),
+    // 3. Emitir evento WebSocket
+    this.operativoGateway.emitirFotoEnVivo(posicion.recorridoId, {
+      posicion_id: posicion.id,
+      lat: Number(posicion.latitud),
+      lon: Number(posicion.longitud),
+      capturado_ts: Number(posicion.timestamp),
     });
 
-    return { status: 'success', message: 'Imagen guardada correctamente', id: posicionId };
+    return { status: 'success', message: 'Imagen enviada correctamente', id: posicionId };
   }
 
   /**
@@ -401,7 +410,6 @@ export class OperativoService {
   async listarFotosRecorrido(recorridoId: string) {
     const posiciones = await this.posicionService.obtenerPosicionesPorRecorrido(recorridoId);
     return posiciones
-      .filter(p => !!p.imagen_base64)
       .map(p => ({
         posicion_id: p.id,
         lat: Number(p.latitud),
@@ -412,10 +420,30 @@ export class OperativoService {
 
   async obtenerImagenPosicion(posicionId: string) {
     const posicion = await this.posicionService.obtenerPosicionPorId(posicionId);
-    if (!posicion || !posicion.imagen_base64) {
-      throw new NotFoundException('Imagen no encontrada para esta posición');
+    const recorrido = await this.recorridoRepo.findOne({ where: { id: posicion.recorridoId } });
+
+    if (!recorrido?.api_recorrido_id) {
+      throw new NotFoundException('Imagen no encontrada: recorrido no vinculado a API externa');
     }
-    return posicion.imagen_base64;
+
+    const apiPosicionId = await this.resolverApiPosicionId(
+      recorrido.api_recorrido_id,
+      posicion,
+    );
+
+    if (!apiPosicionId) {
+      throw new NotFoundException('Imagen no encontrada en API externa para esta posición');
+    }
+
+    const imagen = await this.get<any>(
+      `/recorridos/${recorrido.api_recorrido_id}/posiciones/${apiPosicionId}/imagen`,
+    );
+
+    if (!imagen?.imagen_base64) {
+      throw new NotFoundException('Imagen no encontrada en API externa');
+    }
+
+    return imagen.imagen_base64;
   }
 
   async obtenerPosiciones(recorridoId: string) {

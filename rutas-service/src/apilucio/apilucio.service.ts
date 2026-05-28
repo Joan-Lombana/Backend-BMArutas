@@ -233,6 +233,28 @@ export class ApilucioService {
     return res.data;
   }
 
+  async obtenerImagenPosicion(recorridoId: string, posicionId: string): Promise<any> {
+    const res = await lastValueFrom(
+      this.http.get(
+        `${this.baseUrl}/recorridos/${recorridoId}/posiciones/${posicionId}/imagen`,
+        {
+          params: { perfil_id: this.perfilId },
+        },
+      ),
+    );
+    return res.data;
+  }
+
+  async subirImagenPosicion(posicionId: string, imagen: string): Promise<any> {
+    const res = await lastValueFrom(
+      this.http.post(
+        `${this.baseUrl}/recorridos/posiciones/${posicionId}/imagen`,
+        { imagen_base64: imagen, perfil_id: this.perfilId },
+      ),
+    );
+    return res.data;
+  }
+
   // ================= CALLES =================
 
   async obtenerCalles(): Promise<CalleAPI[]> {
