@@ -13,7 +13,6 @@
   "migration:run:docker": "docker exec -it backend npm run migration:run",
   "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
   "migration:revert:docker": "docker exec -it backend npm run migration:revert",
-  "migration:run:prod": "node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js",
   "migration:revert:prod": "node ./node_modules/typeorm/cli.js migration:revert -d dist/data-source.js",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
