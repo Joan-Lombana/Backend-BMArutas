@@ -205,6 +205,7 @@ export class OperativoGateway
       lat: number;
       lon: number;
       capturado_ts: number;
+      imagen_base64: string;
     },
   ) {
     this.servidor.emit('location:photo', payload);

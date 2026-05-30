@@ -333,6 +333,7 @@ export class OperativoService {
       lat: Number(posicion.latitud),
       lon: Number(posicion.longitud),
       capturado_ts: Number(posicion.timestamp),
+      imagen_base64: imagenBase64,
     });
 
     return { status: 'success', message: 'Imagen enviada correctamente', id: posicionId };
@@ -408,13 +409,24 @@ export class OperativoService {
   }
 
   async listarFotosRecorrido(recorridoId: string) {
-    const posiciones = await this.posicionService.obtenerPosicionesPorRecorrido(recorridoId);
-    return posiciones
-      .map(p => ({
+    const recorrido = await this.recorridoRepo.findOne({ where: { id: recorridoId } });
+    if (!recorrido?.api_recorrido_id) return [];
+
+    // Obtener posiciones de API externa y filtrar las que tienen imagen
+    const posicionesApi = await this.get<any[]>(
+      `/recorridos/${recorrido.api_recorrido_id}/posiciones`,
+    );
+
+    if (!Array.isArray(posicionesApi)) return [];
+
+    return posicionesApi
+      .filter((p: any) => !!p.imagen_base64)
+      .map((p: any) => ({
         posicion_id: p.id,
-        lat: Number(p.latitud),
-        lon: Number(p.longitud),
-        capturado_ts: Number(p.timestamp),
+        lat: Number(p.lat),
+        lon: Number(p.lon),
+        capturado_ts: Number(new Date(p.created_at ?? p.updated_at ?? 0).getTime()),
+        imagen_base64: p.imagen_base64,
       }));
   }
 

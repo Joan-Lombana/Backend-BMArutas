@@ -1,4 +1,4 @@
-import { Controller, Patch, Get, Post, Put, Delete, Body, Param, Res } from '@nestjs/common';
+import { Controller, Patch, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
 import { OperativoService } from './operativo.service';
 
 
@@ -149,21 +149,9 @@ export class OperativoController {
   }
 
   @Get('recorridos/posiciones/:posicionId/imagen')
-  async obtenerImagenPosicion(@Param('posicionId') posicionId: string, @Res() res: any) {
+  async obtenerImagenPosicion(@Param('posicionId') posicionId: string) {
     const base64Str = await this.operativoService.obtenerImagenPosicion(posicionId);
-
-    const match = base64Str.match(/^data:image\/(.+);base64,(.*)$/s);
-    if (match) {
-      const ext = match[1];
-      const buffer = Buffer.from(match[2], 'base64');
-      res.set('Content-Type', `image/${ext}`);
-      return res.send(buffer);
-    }
-
-    // Fallback: base64 sin prefijo data:image/...
-    const buffer = Buffer.from(base64Str, 'base64');
-    res.set('Content-Type', 'image/jpeg');
-    return res.send(buffer);
+    return { imagen_base64: base64Str };
   }
 
   @Put('recorridos/:id/posiciones/:posicionId')
