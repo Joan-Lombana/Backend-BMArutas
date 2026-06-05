@@ -6,14 +6,14 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-  "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate src/migrations/AutoMigration -d src/data-source.ts",
-  "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
-  "migration:generate:docker": "docker exec -it backend npm run migration:generate",
-  "migration:run:docker": "docker exec -it backend npm run migration:run",
-  "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
-  "migration:revert:docker": "docker exec -it backend npm run migration:revert",
-  "migration:run:prod": "node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js",
-  "migration:revert:prod": "node ./node_modules/typeorm/cli.js migration:revert -d dist/data-source.js",
+    "migration:generate": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate src/migrations/AutoMigration -d src/data-source.ts",
+    "migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/data-source.ts",
+    "migration:generate:docker": "docker exec -it backend npm run migration:generate",
+    "migration:run:docker": "docker exec -it backend npm run migration:run",
+    "migration:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/data-source.ts",
+    "migration:revert:docker": "docker exec -it backend npm run migration:revert",
+    "migration:run:prod": "node ./node_modules/typeorm/cli.js migration:run -d dist/data-source.js",
+    "migration:revert:prod": "node ./node_modules/typeorm/cli.js migration:revert -d dist/data-source.js",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -30,7 +30,6 @@
     "seed:admin:prod": "node dist/autenticacion/seed/seed-admin.js",
     "seed:roles:dev": "ts-node -r tsconfig-paths/register src/autenticacion/rol/seed/roles.seeder.ts",
     "seed:roles:prod": "node dist/autenticacion/rol/seed/roles.seeder.js"
-  
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
